@@ -21,7 +21,7 @@
             min-height: 400px;
             border-radius: 0.5rem;
         }
-        .leaflet-popup-content-wrapper {
+        .leaflet-popup-content-wrapper { 
             border-radius: 0.375rem;
         }
         .custom-toast {
@@ -64,7 +64,7 @@
             background-color: #F9FAFB;
         }
         #folderProcessingLogs {
-            max-height: 150px;
+            max-height: 100px; 
             overflow-y: auto;
             background-color: #f9fafb;
             border: 1px solid #e5e7eb;
@@ -149,114 +149,77 @@
             box-shadow: 0 0 5px rgba(0,0,0,0.4);
         }
 
-        /* Gallery Modal Styles */
         #galleryModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
-            z-index: 10001; /* Above toast */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease-in-out;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.75); z-index: 10001; 
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out;
         }
-        #galleryModal.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        #galleryModal.show { opacity: 1; pointer-events: auto; }
         .gallery-content {
-            position: relative; /* Added for positioning context of the close button */
-            background-color: white;
-            padding: 20px;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 90vw;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
+            position: relative; background-color: white; padding: 20px; border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;
+            max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column;
         }
         .gallery-image-container {
-            flex-grow: 1; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden; 
-            margin-bottom: 15px;
+            flex-grow: 1; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; margin-bottom: 5px; 
         }
-        #galleryImage {
-            max-width: 100%;
-            max-height: 70vh; 
-            object-fit: contain;
-            border-radius: 0.25rem;
+        #galleryImage { max-width: 100%; max-height: 60vh; object-fit: contain; border-radius: 0.25rem; }
+        .gallery-info {
+            margin-bottom: 10px;
         }
-        .gallery-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-        }
+        #galleryFilename { font-size: 0.9rem; color: #4A5568; margin-bottom: 2px; }
+        #galleryCoordinates { font-size: 0.75rem; color: #718096; } 
+        #galleryDate { font-size: 0.75rem; color: #718096; margin-top: 1px; } 
+        .gallery-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
         .gallery-nav-button {
-            background-color: #4A5568; 
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            font-size: 1.5rem;
+            background-color: #4A5568; color: white; border: none; padding: 8px 16px;
+            border-radius: 0.375rem; cursor: pointer; font-size: 1.5rem;
         }
-        .gallery-nav-button:hover {
-            background-color: #2D3748; 
-        }
-        .gallery-nav-button:disabled {
-            background-color: #A0AEC0; 
-            cursor: not-allowed;
-        }
-        #galleryFilename {
-            font-size: 0.9rem;
-            color: #4A5568;
-        }
+        .gallery-nav-button:hover { background-color: #2D3748; }
+        .gallery-nav-button:disabled { background-color: #A0AEC0; cursor: not-allowed; }
         #galleryCloseButton {
+            position: absolute; top: 8px; right: 8px; background: rgba(230, 230, 230, 0.8);
+            border: 1px solid #b0b0b0; border-radius: 50%; width: 32px; height: 32px;
+            font-size: 1.6rem; color: #333; cursor: pointer; z-index: 10;
+            display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+        }
+         #galleryCloseButton:hover { background-color: rgba(200, 200, 200, 1); color: #000; }
+        
+        #speciesListContainer {
+            max-height: 150px; 
+            overflow-y: auto;
+            border: 1px solid #e5e7eb; 
+            border-radius: 0.375rem; 
+            padding: 0.5rem;
+            background-color: #f9fafb; 
+        }
+        .species-list-item {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .species-list-item:last-child {
+            border-bottom: none;
+        }
+        .species-list-item:hover {
+            background-color: #eff6ff; 
+        }
+        .species-list-item.selected {
+            background-color: #bfdbfe; 
+            font-weight: 600;
+        }
+        #zoomLevelDisplay {
             position: absolute;
-            top: 8px; /* Adjusted for better placement within padding */
-            right: 8px; /* Adjusted for better placement within padding */
-            background: rgba(230, 230, 230, 0.8); /* Light background for visibility */
-            border: 1px solid #b0b0b0;
-            border-radius: 50%; /* Circular button */
-            width: 32px; /* Explicit size */
-            height: 32px; /* Explicit size */
-            font-size: 1.6rem; /* Adjusted for new size */
-            color: #333; /* Darker color for the '×' */
-            cursor: pointer;
-            z-index: 10; /* Ensure it's above other content within the modal */
-            display: flex; 
-            align-items: center;
-            justify-content: center;
-            line-height: 1; /* For better centering of '×' */
-            padding: 0; /* Remove default button padding if any */
-        }
-         #galleryCloseButton:hover {
-            background-color: rgba(200, 200, 200, 1);
-            color: #000;
-        }
-        .popup-view-gallery-button {
-            background-color: #3b82f6; 
-            color: white;
-            padding: 5px 10px;
-            border-radius: 0.25rem;
-            border: none;
-            cursor: pointer;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 2px 8px;
             font-size: 0.8rem;
-            margin-top: 5px;
-            display: inline-block;
-        }
-        .popup-view-gallery-button:hover {
-            background-color: #2563eb; 
+            border-radius: 0.25rem;
+            z-index: 900; /* Below controls, above map */
+            color: #333;
         }
     </style>
 </head>
@@ -276,18 +239,32 @@
             <div id="leftPanelContainer" class="flex flex-col lg:w-1/3 transition-all duration-300 ease-in-out">
                 <button id="togglePanelButton">Hide Details Panel</button>
                 <div id="panelContentWrapper" class="space-y-6 grow overflow-auto transition-opacity duration-300 ease-in-out mt-2">
-                    <div id="processFolderSection" class="bg-white p-6 rounded-lg shadow-lg">
-                        <h2 class="text-xl font-semibold mb-4 text-green-600">Process Image Folder</h2>
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h2 class="text-xl font-semibold mb-4 text-purple-600">1. Select Parent Folder</h2>
                         <p class="text-sm text-gray-600 mb-3">
-                            Select a local folder. GPS data will be plotted & dynamically clustered. Folder name for flower names. "example.jpg" shown on map.
+                            Choose the main folder containing subfolders for each species (e.g., "Orchideeenfoto's").
                         </p>
                         <div>
-                            <label for="folderInput" class="block text-sm font-medium text-gray-700">Select Image Folder:</label>
-                            <input type="file" id="folderInput" webkitdirectory directory multiple
-                                   class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"/>
+                            <label for="parentFolderInput" class="block text-sm font-medium text-gray-700">Select Parent Folder:</label>
+                            <input type="file" id="parentFolderInput" webkitdirectory directory
+                                   class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"/>
                         </div>
-                        <div id="folderProcessResult" class="mt-4 text-sm space-y-2">
-                            <p id="imageCountText">No folder selected yet.</p>
+                    </div>
+                    
+                    <div id="speciesSelectionSection" class="bg-white p-6 rounded-lg shadow-lg" style="display: none;">
+                        <h2 class="text-xl font-semibold mb-4 text-green-600">2. Select Species</h2>
+                        <p class="text-sm text-gray-600 mb-3">
+                            Click on a scientific name below to process its photos.
+                        </p>
+                        <div id="speciesListContainer">
+                            {/* Initial content will be set by JS */}
+                        </div>
+                    </div>
+
+                    <div id="processingInfoSection" class="bg-white p-6 rounded-lg shadow-lg" style="display: none;">
+                        <h2 class="text-xl font-semibold mb-4 text-blue-600">3. Processing Results</h2>
+                        <div id="folderProcessResult" class="mt-1 text-sm space-y-2">
+                            <p id="imageCountText">Select a species to process.</p>
                             <div id="folderProcessingLogsContainer" style="display: none;">
                                  <h4 class="font-semibold text-gray-700">Processing Log:</h4>
                                  <div id="folderProcessingLogs"></div>
@@ -299,7 +276,7 @@
                     </div>
 
                     <div id="addedLocationsSection" class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold mb-3 text-pink-500">Added Locations:</h3>
+                        <h3 class="text-lg font-semibold mb-3 text-pink-500">Added Locations (Current Species):</h3>
                         <div id="locationListContainer" class="max-h-60 overflow-y-auto bg-gray-50 p-3 rounded-md border border-gray-200">
                             <ul id="locationList" class="list-disc list-inside space-y-1 text-sm">
                                 <li id="noLocations" class="text-gray-500">No locations added yet.</li>
@@ -312,6 +289,7 @@
             <div id="mapContainerOuter" class="lg:w-2/3 h-[500px] md:h-[600px] lg:h-[calc(100vh-12rem)] shadow-lg rounded-lg overflow-hidden transition-all duration-300 ease-in-out">
                 <div id="map"></div>
                 <img id="exampleImageOverlay" src="#" alt="Example flower image" />
+                <div id="zoomLevelDisplay">Zoom: N/A</div> <!-- Zoom level display -->
             </div>
         </div>
 
@@ -320,13 +298,18 @@
         </footer>
     </div>
 
+    <!-- Gallery Modal -->
     <div id="galleryModal">
         <div class="gallery-content">
             <button id="galleryCloseButton">&times;</button>
             <div class="gallery-image-container">
                 <img id="galleryImage" src="#" alt="Gallery image" />
             </div>
-            <p id="galleryFilename">Filename.jpg</p>
+            <div class="gallery-info">
+                <p id="galleryFilename">Filename.jpg</p>
+                <p id="galleryCoordinates">Lat: N/A, Lon: N/A</p>
+                <p id="galleryDate">(Datum niet beschikbaar)</p> 
+            </div>
             <div class="gallery-controls">
                 <button id="galleryPrevButton" class="gallery-nav-button">&larr;</button>
                 <span id="galleryCounter">1 / 1</span>
@@ -350,6 +333,7 @@
 
             let allOriginalPhotoLocations = []; 
             let activeClusterMarkers = []; 
+            let subfolderSpeciesData = []; 
 
             const locationListElement = document.getElementById('locationList');
             const scientificNameInputElement = document.getElementById('scientificNameInput');
@@ -361,18 +345,34 @@
             let toastTimeout;
             let currentExampleImageUrl = null; 
 
-            // Gallery Modal Elements
             const galleryModal = document.getElementById('galleryModal');
             const galleryImageElement = document.getElementById('galleryImage');
             const galleryFilenameElement = document.getElementById('galleryFilename');
+            const galleryCoordinatesElement = document.getElementById('galleryCoordinates'); 
+            const galleryDateElement = document.getElementById('galleryDate'); 
             const galleryPrevButton = document.getElementById('galleryPrevButton');
             const galleryNextButton = document.getElementById('galleryNextButton');
             const galleryCloseButton = document.getElementById('galleryCloseButton');
             const galleryCounterElement = document.getElementById('galleryCounter');
-
-            let currentGalleryFiles = [];
+            let currentGalleryPhotosData = []; 
             let currentGalleryIndex = 0;
             let currentGalleryObjectUrls = []; 
+
+            const parentFolderInputElement = document.getElementById('parentFolderInput'); 
+            const speciesSelectionSection = document.getElementById('speciesSelectionSection');
+            const speciesListContainer = document.getElementById('speciesListContainer');
+            const processingInfoSection = document.getElementById('processingInfoSection');
+            const imageCountTextElement = document.getElementById('imageCountText');
+            const folderProcessingLogsContainer = document.getElementById('folderProcessingLogsContainer');
+            const folderProcessingLogsElement = document.getElementById('folderProcessingLogs');
+            
+            const togglePanelButton = document.getElementById('togglePanelButton');
+            const leftPanelContainer = document.getElementById('leftPanelContainer'); 
+            const panelContentWrapper = document.getElementById('panelContentWrapper'); 
+            let isPanelContentVisible = true; 
+            
+            const zoomLevelDisplayElement = document.getElementById('zoomLevelDisplay'); 
+
 
             function showToast(message, type = 'success', duration = 3000) {
                 toastMessageElement.textContent = message;
@@ -383,13 +383,36 @@
                 }, duration);
             }
             
-            function clearAllUIData() { 
-                locationListElement.innerHTML = ''; 
-                const newNoLocationsLi = document.createElement('li');
-                newNoLocationsLi.id = 'noLocations';
-                newNoLocationsLi.className = 'text-gray-500';
-                newNoLocationsLi.textContent = 'No locations added yet.';
-                locationListElement.appendChild(newNoLocationsLi);
+            function resetUIForNewParentFolder() { 
+                locationListElement.innerHTML = '<li id="noLocations" class="text-gray-500">No locations added yet.</li>';
+                speciesListContainer.innerHTML = '<p id="noSpeciesFound" class="text-gray-500">Select a parent folder to see species.</p>'; 
+                speciesSelectionSection.style.display = 'none';
+                processingInfoSection.style.display = 'none';
+                scientificNameInputElement.value = '';
+                dutchNameInputElement.value = '';
+                imageCountTextElement.textContent = 'Select a species to process.';
+                folderProcessingLogsContainer.style.display = 'none';
+
+                if (currentExampleImageUrl) {
+                    URL.revokeObjectURL(currentExampleImageUrl);
+                    currentExampleImageUrl = null;
+                }
+                exampleImageOverlayElement.style.display = 'none';
+                exampleImageOverlayElement.src = "#";
+                exampleImageOverlayElement.style.width = ''; 
+                exampleImageOverlayElement.style.height = '';
+                
+                allOriginalPhotoLocations = [];
+                subfolderSpeciesData = [];
+                reclusterAndDisplay(); 
+                closeGalleryModal(); 
+            }
+            
+            function resetUIForNewSpeciesSelection() {
+                locationListElement.innerHTML = '<li id="noLocations" class="text-gray-500">No locations added yet.</li>';
+                imageCountTextElement.textContent = 'Processing...';
+                folderProcessingLogsContainer.style.display = 'none';
+                folderProcessingLogsElement.innerHTML = '';
 
                 if (currentExampleImageUrl) {
                     URL.revokeObjectURL(currentExampleImageUrl);
@@ -405,6 +428,7 @@
                 closeGalleryModal(); 
             }
 
+
             function createClusterIcon(count) {
                 const size = count < 10 ? 30 : (count < 100 ? 35 : 40);
                 return L.divIcon({
@@ -416,22 +440,42 @@
 
             function getDynamicClusterThreshold() {
                 const zoom = map.getZoom();
-                if (zoom <= 5) return 10000; 
-                if (zoom <= 7) return 2000;
-                if (zoom <= 9) return 500;
-                if (zoom <= 11) return 200;
-                if (zoom <= 13) return 100;
-                if (zoom <= 15) return 50;
-                return 25; 
+                // Adjusted thresholds for more aggressive clustering at lower zoom levels
+                if (zoom <= 6) return 50000;  // 50km
+                if (zoom <= 8) return 10000;  // 10km
+                if (zoom <= 10) return 2000;   // 2km
+                if (zoom <= 12) return 500;    // 500m
+                if (zoom <= 14) return 100;    // 100m
+                return 50; // 50m for higher zoom levels (was 25m)
             }
             
-            function openGalleryModal(files, startIndex = 0) {
-                if (!files || files.length === 0) return;
+            function parseExifDate(dateString) {
+                if (!dateString) return null;
+                const parts = dateString.split(" ")[0].split(":");
+                if (parts.length === 3) {
+                    return new Date(parts[0], parts[1] - 1, parts[2]);
+                }
+                return null;
+            }
+
+            function openGalleryModal(photosData, startIndex = 0) { 
+                if (!photosData || photosData.length === 0) return;
                 
                 currentGalleryObjectUrls.forEach(url => URL.revokeObjectURL(url));
                 currentGalleryObjectUrls = [];
 
-                currentGalleryFiles = files.map(f => f.fileObject); 
+                const sortedPhotosData = [...photosData].sort((a, b) => {
+                    const dateA = parseExifDate(a.date);
+                    const dateB = parseExifDate(b.date);
+                    if (dateA && dateB) {
+                        return dateB - dateA; 
+                    }
+                    if (dateA) return -1; 
+                    if (dateB) return 1;  
+                    return 0; 
+                });
+
+                currentGalleryPhotosData = sortedPhotosData; 
                 currentGalleryIndex = startIndex;
                 displayGalleryImage();
                 galleryModal.classList.add('show');
@@ -443,51 +487,62 @@
                 currentGalleryObjectUrls = [];
                 galleryImageElement.src = "#"; 
             }
+            
+            function formatExifDateToDutch(dateString) {
+                if (!dateString) return "(Datum niet beschikbaar)";
+                const dateObj = parseExifDate(dateString);
+                if (!dateObj) return "(Ongeldig datumformaat)";
+                
+                const day = dateObj.getDate(); 
+                const month = dateObj.getMonth(); 
+                const year = dateObj.getFullYear();
+
+                const dutchMonths = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+                
+                return `(${day} ${dutchMonths[month]} ${year})`; 
+            }
+
 
             function displayGalleryImage() {
-                if (currentGalleryFiles.length === 0) return;
-                const file = currentGalleryFiles[currentGalleryIndex];
+                if (currentGalleryPhotosData.length === 0 || currentGalleryIndex < 0 || currentGalleryIndex >= currentGalleryPhotosData.length) return;
+                
+                const currentPhotoData = currentGalleryPhotosData[currentGalleryIndex];
+                const file = currentPhotoData.fileObject;
                 const objectURL = URL.createObjectURL(file);
                 currentGalleryObjectUrls.push(objectURL); 
 
                 galleryImageElement.src = objectURL;
-                galleryFilenameElement.textContent = file.name;
-                galleryCounterElement.textContent = `${currentGalleryIndex + 1} / ${currentGalleryFiles.length}`;
+                galleryFilenameElement.textContent = currentPhotoData.desc; 
+                galleryCoordinatesElement.textContent = `Lat: ${currentPhotoData.lat.toFixed(4)}, Lon: ${currentPhotoData.lon.toFixed(4)}`;
+                galleryDateElement.textContent = formatExifDateToDutch(currentPhotoData.date); 
+                galleryCounterElement.textContent = `${currentGalleryIndex + 1} / ${currentGalleryPhotosData.length}`;
 
                 galleryPrevButton.disabled = currentGalleryIndex === 0;
-                galleryNextButton.disabled = currentGalleryIndex === currentGalleryFiles.length - 1;
+                galleryNextButton.disabled = currentGalleryIndex === currentGalleryPhotosData.length - 1;
             }
 
             galleryPrevButton.addEventListener('click', () => {
-                if (currentGalleryIndex > 0) {
-                    currentGalleryIndex--;
-                    displayGalleryImage();
-                }
+                if (currentGalleryIndex > 0) { currentGalleryIndex--; displayGalleryImage(); }
             });
-
             galleryNextButton.addEventListener('click', () => {
-                if (currentGalleryIndex < currentGalleryFiles.length - 1) {
-                    currentGalleryIndex++;
-                    displayGalleryImage();
-                }
+                if (currentGalleryIndex < currentGalleryPhotosData.length - 1) { currentGalleryIndex++; displayGalleryImage(); }
             });
             galleryCloseButton.addEventListener('click', closeGalleryModal);
             document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && galleryModal.classList.contains('show')) {
-                    closeGalleryModal();
-                }
+                if (event.key === 'Escape' && galleryModal.classList.contains('show')) closeGalleryModal();
             });
-
 
             function reclusterAndDisplay() {
                 activeClusterMarkers.forEach(marker => map.removeLayer(marker));
                 activeClusterMarkers = [];
+                const noLocLi = document.getElementById('noLocations');
 
                 if (allOriginalPhotoLocations.length === 0) {
-                     const noLocLi = document.getElementById('noLocations');
                      if(noLocLi) noLocLi.style.display = 'list-item';
                     return;
                 }
+                 if(noLocLi) noLocLi.style.display = 'none';
+
 
                 const currentThreshold = getDynamicClusterThreshold();
                 let tempClusters = []; 
@@ -503,42 +558,21 @@
                             break;
                         }
                     }
-
                     if (foundCluster) {
                         foundCluster.points.push(pointData); 
                     } else {
-                        tempClusters.push({
-                            lat: pointData.lat,
-                            lon: pointData.lon,
-                            points: [pointData] 
-                        });
+                        tempClusters.push({ lat: pointData.lat, lon: pointData.lon, points: [pointData] });
                     }
                 });
 
                 tempClusters.forEach(cluster => {
                     let marker;
-                    let popupContent = '';
+                    marker = L.marker([cluster.lat, cluster.lon], { icon: createClusterIcon(cluster.points.length) });
                     
-                    const viewButton = document.createElement('button');
-                    viewButton.className = 'popup-view-gallery-button';
-                    viewButton.onclick = () => openGalleryModal(cluster.points, 0);
+                    marker.on('click', function() {
+                        openGalleryModal(cluster.points, 0);
+                    });
 
-                    if (cluster.points.length === 1) {
-                        const point = cluster.points[0];
-                        marker = L.marker([point.lat, point.lon]);
-                        popupContent = `<b>${point.desc}</b><br>Lat: ${point.lat.toFixed(4)}, Lon: ${point.lon.toFixed(4)}<br>`;
-                        viewButton.textContent = 'View Image';
-                    } else {
-                        marker = L.marker([cluster.lat, cluster.lon], { icon: createClusterIcon(cluster.points.length) });
-                        popupContent = `<b>Cluster (${cluster.points.length} photos)</b><br>Approx. Lat: ${cluster.lat.toFixed(4)}, Lon: ${cluster.lon.toFixed(4)}<br>`;
-                        viewButton.textContent = 'View Gallery';
-                    }
-                    
-                    const popupDiv = document.createElement('div');
-                    popupDiv.innerHTML = popupContent;
-                    popupDiv.appendChild(viewButton);
-
-                    marker.bindPopup(popupDiv);
                     marker.addTo(map);
                     activeClusterMarkers.push(marker);
                     cluster.marker = marker; 
@@ -560,10 +594,8 @@
                     for (const cluster of currentClusters) {
                         const pointIndex = cluster.points.findIndex(p => p.desc === photoData.desc && p.lat === photoData.lat && p.lon === photoData.lon);
                         if (pointIndex > -1) {
-                            if (cluster.marker) {
-                                map.setView([cluster.lat, cluster.lon], Math.max(map.getZoom(), 15));
-                                cluster.marker.openPopup(); 
-                            }
+                            openGalleryModal(cluster.points, pointIndex);
+                            map.setView([cluster.lat, cluster.lon], Math.max(map.getZoom(), 15)); 
                             return;
                         }
                     }
@@ -601,12 +633,6 @@
                 locationListElement.appendChild(listItem);
             }
 
-
-            const folderInputElement = document.getElementById('folderInput');
-            const imageCountTextElement = document.getElementById('imageCountText');
-            const folderProcessingLogsContainer = document.getElementById('folderProcessingLogsContainer');
-            const folderProcessingLogsElement = document.getElementById('folderProcessingLogs');
-
             function convertDMSToDD(degrees, minutes, seconds, direction) {
                 let dd = degrees + minutes / 60 + seconds / (60 * 60);
                 if (direction === "S" || direction === "W") {
@@ -626,51 +652,45 @@
                 return { scientificName, dutchName };
             }
 
-            folderInputElement.addEventListener('change', async function(event) {
-                const files = event.target.files;
-                if (!files || files.length === 0) {
-                    imageCountTextElement.textContent = 'No folder or files selected.';
-                    folderProcessingLogsContainer.style.display = 'none';
-                    showToast('No folder selected or folder is empty.', 'info');
-                    return;
-                }
+            function hidePanel() {
+                if (!isPanelContentVisible) return; 
+
+                isPanelContentVisible = false;
+                panelContentWrapper.classList.add('hidden');
+                leftPanelContainer.classList.remove('lg:w-1/3'); 
+                leftPanelContainer.classList.add('lg:w-auto', 'w-auto', 'p-0', 'items-start'); 
                 
-                clearAllUIData(); 
+                togglePanelButton.textContent = '-';
+                togglePanelButton.className = 'toggle-button-panel-hidden';
+                mapContainerOuterElement.appendChild(togglePanelButton); 
 
-                let selectedFolderName = "Unknown Folder";
-                if (files[0] && files[0].webkitRelativePath) {
-                    const pathParts = files[0].webkitRelativePath.split('/');
-                    if (pathParts.length > 1) {
-                        selectedFolderName = pathParts[0]; 
-                    }
-                }
+                mapContainerOuterElement.classList.add('lg:w-full');
+                mapContainerOuterElement.classList.remove('lg:w-2/3');
+                setTimeout(() => { map.invalidateSize(); }, 310); 
+            }
+
+            async function processSelectedSpecies(speciesData) {
+                resetUIForNewSpeciesSelection();
                 
-                const { scientificName, dutchName } = extractNamesFromFolderName(selectedFolderName);
-                scientificNameInputElement.value = scientificName;
-                dutchNameInputElement.value = dutchName || "Not found in folder name"; 
+                map.setView([47.5, 10.8], 5);
+                updateZoomLevel(); 
 
-                if (dutchName) {
-                    showToast(`Folder names set: ${scientificName} (${dutchName})`, 'info', 4000);
-                } else if (scientificName !== "Unknown Folder") {
-                     showToast(`Folder name set: ${scientificName}`, 'info', 4000);
-                }
-
-                folderProcessingLogsElement.innerHTML = '';
+                processingInfoSection.style.display = 'block';
                 folderProcessingLogsContainer.style.display = 'block';
-                let imageFileCount = 0;
+                folderProcessingLogsElement.innerHTML = '';
+
+                scientificNameInputElement.value = speciesData.scientificName;
+                dutchNameInputElement.value = speciesData.dutchName || "N/A";
+
                 let exampleImageFile = null;
                 let photosWithGPSCount = 0;
                 const promises = [];
 
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    
-                    if (file.name.toLowerCase() === 'example.jpg') {
+                for (const file of speciesData.filesInSubfolder) {
+                     if (file.name.toLowerCase() === 'example.jpg') {
                         exampleImageFile = file;
                     }
-
                     if (['image/jpeg', 'image/tiff'].includes(file.type) || ['.jpg', '.jpeg', '.tif', '.tiff'].includes(file.name.substring(file.name.lastIndexOf('.')).toLowerCase())) {
-                        imageFileCount++;
                         const logEntry = document.createElement('p');
                         logEntry.textContent = `Processing for EXIF: ${file.name}...`;
                         folderProcessingLogsElement.appendChild(logEntry);
@@ -690,11 +710,12 @@
                                 const lonData = exifData.GPSLongitude;
                                 const latRef = exifData.GPSLatitudeRef;
                                 const lonRef = exifData.GPSLongitudeRef;
+                                const dateTaken = exifData.DateTimeOriginal || exifData.DateTime; 
+
                                 if (latData && lonData && latRef && lonRef) {
                                     const latitude = convertDMSToDD(latData[0], latData[1], latData[2], latRef);
                                     const longitude = convertDMSToDD(lonData[0], lonData[1], lonData[2], lonRef);
-                                    
-                                    const photoData = { lat: latitude, lon: longitude, desc: file.name, fileObject: file }; 
+                                    const photoData = { lat: latitude, lon: longitude, desc: file.name, fileObject: file, date: dateTaken }; 
                                     allOriginalPhotoLocations.push(photoData);
                                     populateLocationList(photoData); 
                                     photosWithGPSCount++;
@@ -738,35 +759,108 @@
                     exampleImageOverlayElement.style.display = 'none';
                     exampleImageOverlayElement.style.width = ''; 
                     exampleImageOverlayElement.style.height = '';
-                    showToast('"example.jpg" not found in folder.', 'info');
+                    showToast('"example.jpg" not found in this species folder.', 'info');
                 }
                 
-                Promise.all(promises).then(() => {
-                    reclusterAndDisplay(); 
-                    if (imageFileCount > 0) {
-                        imageCountTextElement.innerHTML = `Processed <strong class="text-green-700">${imageFileCount}</strong> files. 
-                                                       <strong class="text-pink-600">${photosWithGPSCount}</strong> photo(s) with GPS added.`;
-                        showToast(`EXIF complete. ${photosWithGPSCount} photos with GPS added.`, 'success', 5000);
-                    } else if (!exampleImageFile) {
-                        imageCountTextElement.textContent = 'No processable image files (JPG, TIFF for EXIF) or example.jpg found.';
-                         showToast('No relevant files found.', 'info');
+                await Promise.all(promises); 
+                reclusterAndDisplay(); 
+                imageCountTextElement.innerHTML = `Processed <strong class="text-green-700">${speciesData.filesInSubfolder.length}</strong> files in species folder. 
+                                               <strong class="text-pink-600">${photosWithGPSCount}</strong> photo(s) with GPS added.`;
+                showToast(`Processing complete for ${speciesData.scientificName}. ${photosWithGPSCount} photos with GPS.`, 'success', 5000);
+                
+                hidePanel();
+            }
+
+
+            parentFolderInputElement.addEventListener('change', function(event) {
+                const files = event.target.files;
+                if (!files || files.length === 0) {
+                    showToast('No parent folder selected or folder is empty.', 'info');
+                    return;
+                }
+                
+                resetUIForNewParentFolder();
+                const detectedSubfolders = new Map(); 
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const relativePath = file.webkitRelativePath; 
+                    
+                    const pathParts = relativePath.split('/');
+                    if (pathParts.length > 1) { 
+                        const actualSubfolderName = pathParts[pathParts.length - 2]; 
+                        if (pathParts[0] !== actualSubfolderName && pathParts.length > 2) { 
+                        }
+                        if (pathParts.length > 2) { 
+                            const speciesSubfolderName = pathParts[1];
+                            if (!detectedSubfolders.has(speciesSubfolderName)) {
+                                detectedSubfolders.set(speciesSubfolderName, { filesInSubfolder: [] });
+                            }
+                            detectedSubfolders.get(speciesSubfolderName).filesInSubfolder.push(file);
+                        } else {
+                             console.log(`File ${file.name} (path: ${relativePath}) is not in a recognized species subfolder structure.`);
+                        }
                     }
-                    folderInputElement.value = '';
+                }
+
+                subfolderSpeciesData = []; 
+                detectedSubfolders.forEach((data, originalSubfolderName) => {
+                    subfolderSpeciesData.push({
+                        ...extractNamesFromFolderName(originalSubfolderName), 
+                        originalSubfolderName: originalSubfolderName,
+                        filesInSubfolder: data.filesInSubfolder
+                    });
                 });
+
+                subfolderSpeciesData.sort((a, b) => a.scientificName.localeCompare(b.scientificName));
+
+                speciesListContainer.innerHTML = ''; 
+                if (subfolderSpeciesData.length > 0) {
+                    speciesSelectionSection.style.display = 'block';
+                    subfolderSpeciesData.forEach((species, index) => {
+                        const speciesDiv = document.createElement('div');
+                        speciesDiv.className = 'species-list-item';
+                        speciesDiv.textContent = `${species.scientificName}${species.dutchName ? ` (${species.dutchName})` : ''}`;
+                        speciesDiv.dataset.speciesIndex = index; 
+                        speciesDiv.onclick = function() {
+                            const currentlySelected = speciesListContainer.querySelector('.species-list-item.selected');
+                            if (currentlySelected) {
+                                currentlySelected.classList.remove('selected');
+                            }
+                            this.classList.add('selected');
+                            const selectedSpeciesData = subfolderSpeciesData[parseInt(this.dataset.speciesIndex)];
+                            processSelectedSpecies(selectedSpeciesData);
+                        };
+                        speciesListContainer.appendChild(speciesDiv);
+                    });
+                } else {
+                    speciesSelectionSection.style.display = 'block'; 
+                    const noSpeciesP = document.createElement('p');
+                    noSpeciesP.id = 'noSpeciesFound'; 
+                    noSpeciesP.className = 'text-gray-500';
+                    noSpeciesP.textContent = 'No species subfolders found in the selected parent folder.';
+                    speciesListContainer.appendChild(noSpeciesP);
+                }
+                parentFolderInputElement.value = ''; 
             });
             
+            // Function to update zoom level display
+            function updateZoomLevel() {
+                if (zoomLevelDisplayElement) {
+                    zoomLevelDisplayElement.textContent = 'Zoom: ' + map.getZoom();
+                }
+            }
+
             map.on('zoomend', function() {
                 reclusterAndDisplay();
+                updateZoomLevel(); // Update zoom display
             });
             map.on('moveend', function() {
                 reclusterAndDisplay();
+                // No need to update zoom on moveend unless zoom also changed
             });
+            updateZoomLevel(); // Initial zoom level display
 
-            const togglePanelButton = document.getElementById('togglePanelButton');
-            const leftPanelContainer = document.getElementById('leftPanelContainer'); 
-            const panelContentWrapper = document.getElementById('panelContentWrapper'); 
-            const mapContainerOuter = document.getElementById('mapContainerOuter'); 
-            let isPanelContentVisible = true; 
 
             togglePanelButton.className = 'toggle-button-panel-visible';
 
@@ -776,35 +870,27 @@
                     panelContentWrapper.classList.remove('hidden');
                     leftPanelContainer.classList.remove('lg:w-auto', 'w-auto', 'p-0', 'items-start');
                     leftPanelContainer.classList.add('lg:w-1/3'); 
-                    
                     togglePanelButton.textContent = 'Hide Details Panel';
                     togglePanelButton.className = 'toggle-button-panel-visible';
                     leftPanelContainer.insertBefore(togglePanelButton, panelContentWrapper);
-
-                    mapContainerOuter.classList.remove('lg:w-full');
-                    mapContainerOuter.classList.add('lg:w-2/3');
+                    mapContainerOuterElement.classList.remove('lg:w-full');
+                    mapContainerOuterElement.classList.add('lg:w-2/3');
                 } else { 
                     panelContentWrapper.classList.add('hidden');
                     leftPanelContainer.classList.remove('lg:w-1/3'); 
                     leftPanelContainer.classList.add('lg:w-auto', 'w-auto', 'p-0', 'items-start'); 
-                    
                     togglePanelButton.textContent = '-';
                     togglePanelButton.className = 'toggle-button-panel-hidden';
-                    mapContainerOuter.appendChild(togglePanelButton); 
-
-                    mapContainerOuter.classList.add('lg:w-full');
-                    mapContainerOuter.classList.remove('lg:w-2/3');
+                    mapContainerOuterElement.appendChild(togglePanelButton); 
+                    mapContainerOuterElement.classList.add('lg:w-full');
+                    mapContainerOuterElement.classList.remove('lg:w-2/3');
                 }
-                setTimeout(() => {
-                    map.invalidateSize();
-                }, 310); 
+                setTimeout(() => { map.invalidateSize(); }, 310); 
             });
 
             const mapElement = document.getElementById('map'); 
-            const resizeObserver = new ResizeObserver(() => {
-                map.invalidateSize();
-            });
-            resizeObserver.observe(mapContainerOuter); 
+            const resizeObserver = new ResizeObserver(() => { map.invalidateSize(); });
+            resizeObserver.observe(mapContainerOuterElement); 
         }); 
     </script>
 </body>
