@@ -188,17 +188,52 @@
          #galleryCloseButton:hover { background-color: rgba(200, 200, 200, 1); color: #000; }
         
         #speciesListContainer {
-            max-height: 150px; 
+            max-height: 200px; 
             overflow-y: auto;
             border: 1px solid #e5e7eb; 
             border-radius: 0.375rem; 
             padding: 0.5rem;
             background-color: #f9fafb; 
         }
+        .genus-header {
+            padding: 0.6rem 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            background-color: #e9d5ff; 
+            border-bottom: 1px solid #d8b4fe; 
+            border-radius: 0.25rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .genus-name-text { 
+            flex-grow: 1; 
+        }
+        .genus-header:hover {
+            background-color: #c084fc; 
+            color: white;
+        }
+        .genus-header .arrow {
+            transition: transform 0.2s ease-in-out;
+            padding: 0 0.5rem; 
+        }
+        .genus-header.expanded .arrow {
+            transform: rotate(90deg);
+        }
+        .species-sublist {
+            padding-left: 1rem; 
+            display: none; 
+            background-color: white;
+            border-top: 1px solid #e5e7eb;
+        }
+        .species-sublist.expanded {
+            display: block;
+        }
         .species-list-item {
             padding: 0.5rem;
             cursor: pointer;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #f3f4f6; 
         }
         .species-list-item:last-child {
             border-bottom: none;
@@ -218,7 +253,7 @@
             padding: 2px 8px;
             font-size: 0.8rem;
             border-radius: 0.25rem;
-            z-index: 900; /* Below controls, above map */
+            z-index: 900; 
             color: #333;
         }
     </style>
@@ -239,8 +274,9 @@
             <div id="leftPanelContainer" class="flex flex-col lg:w-1/3 transition-all duration-300 ease-in-out">
                 <button id="togglePanelButton">Hide Details Panel</button>
                 <div id="panelContentWrapper" class="space-y-6 grow overflow-auto transition-opacity duration-300 ease-in-out mt-2">
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h2 class="text-xl font-semibold mb-4 text-purple-600">1. Select Parent Folder</h2>
+                    <!-- Parent Folder Selection -->
+                    <div id="parentFolderSelectionSection" class="bg-white p-6 rounded-lg shadow-lg">
+                        <h2 class="text-xl font-semibold mb-4 text-purple-600">Select Parent Folder</h2>
                         <p class="text-sm text-gray-600 mb-3">
                             Choose the main folder containing subfolders for each species (e.g., "Orchideeenfoto's").
                         </p>
@@ -251,18 +287,21 @@
                         </div>
                     </div>
                     
+                    <!-- Species Selection List -->
                     <div id="speciesSelectionSection" class="bg-white p-6 rounded-lg shadow-lg" style="display: none;">
-                        <h2 class="text-xl font-semibold mb-4 text-green-600">2. Select Species</h2>
+                        <h2 class="text-xl font-semibold mb-2 text-green-600">Select Species by Genus</h2>
+                        <input type="text" id="speciesSearchInput" placeholder="Search species/genus..."
+                               class="w-full px-3 py-2 mb-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         <p class="text-sm text-gray-600 mb-3">
-                            Click on a scientific name below to process its photos.
+                            Click genus name to view on map, or arrow to expand/collapse. Then select a specific species if desired.
                         </p>
                         <div id="speciesListContainer">
-                            {/* Initial content will be set by JS */}
+                            {/* Genus/Species list will be populated here */}
                         </div>
                     </div>
 
-                    <div id="processingInfoSection" class="bg-white p-6 rounded-lg shadow-lg" style="display: none;">
-                        <h2 class="text-xl font-semibold mb-4 text-blue-600">3. Processing Results</h2>
+                    <!-- Log Display Area -->
+                    <div id="logDisplayArea" class="bg-white p-6 rounded-lg shadow-lg" style="display: none;">
                         <div id="folderProcessResult" class="mt-1 text-sm space-y-2">
                             <p id="imageCountText">Select a species to process.</p>
                             <div id="folderProcessingLogsContainer" style="display: none;">
@@ -275,21 +314,13 @@
                         </p>
                     </div>
 
-                    <div id="addedLocationsSection" class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold mb-3 text-pink-500">Added Locations (Current Species):</h3>
-                        <div id="locationListContainer" class="max-h-60 overflow-y-auto bg-gray-50 p-3 rounded-md border border-gray-200">
-                            <ul id="locationList" class="list-disc list-inside space-y-1 text-sm">
-                                <li id="noLocations" class="text-gray-500">No locations added yet.</li>
-                            </ul>
-                        </div>
-                    </div>
                 </div>
             </div>
 
             <div id="mapContainerOuter" class="lg:w-2/3 h-[500px] md:h-[600px] lg:h-[calc(100vh-12rem)] shadow-lg rounded-lg overflow-hidden transition-all duration-300 ease-in-out">
                 <div id="map"></div>
                 <img id="exampleImageOverlay" src="#" alt="Example flower image" />
-                <div id="zoomLevelDisplay">Zoom: N/A</div> <!-- Zoom level display -->
+                <div id="zoomLevelDisplay">Zoom: N/A</div> 
             </div>
         </div>
 
@@ -298,7 +329,6 @@
         </footer>
     </div>
 
-    <!-- Gallery Modal -->
     <div id="galleryModal">
         <div class="gallery-content">
             <button id="galleryCloseButton">&times;</button>
@@ -333,9 +363,8 @@
 
             let allOriginalPhotoLocations = []; 
             let activeClusterMarkers = []; 
-            let subfolderSpeciesData = []; 
+            let groupedSpeciesData = []; 
 
-            const locationListElement = document.getElementById('locationList');
             const scientificNameInputElement = document.getElementById('scientificNameInput');
             const dutchNameInputElement = document.getElementById('dutchNameInput');
             const exampleImageOverlayElement = document.getElementById('exampleImageOverlay');
@@ -359,9 +388,11 @@
             let currentGalleryObjectUrls = []; 
 
             const parentFolderInputElement = document.getElementById('parentFolderInput'); 
+            const parentFolderSelectionSection = document.getElementById('parentFolderSelectionSection'); 
             const speciesSelectionSection = document.getElementById('speciesSelectionSection');
             const speciesListContainer = document.getElementById('speciesListContainer');
-            const processingInfoSection = document.getElementById('processingInfoSection');
+            const speciesSearchInputElement = document.getElementById('speciesSearchInput'); 
+            const logDisplayArea = document.getElementById('logDisplayArea'); 
             const imageCountTextElement = document.getElementById('imageCountText');
             const folderProcessingLogsContainer = document.getElementById('folderProcessingLogsContainer');
             const folderProcessingLogsElement = document.getElementById('folderProcessingLogs');
@@ -372,6 +403,11 @@
             let isPanelContentVisible = true; 
             
             const zoomLevelDisplayElement = document.getElementById('zoomLevelDisplay'); 
+
+            // Initial UI State
+            parentFolderSelectionSection.style.display = 'block';
+            speciesSelectionSection.style.display = 'none';
+            logDisplayArea.style.display = 'none';
 
 
             function showToast(message, type = 'success', duration = 3000) {
@@ -384,14 +420,17 @@
             }
             
             function resetUIForNewParentFolder() { 
-                locationListElement.innerHTML = '<li id="noLocations" class="text-gray-500">No locations added yet.</li>';
                 speciesListContainer.innerHTML = '<p id="noSpeciesFound" class="text-gray-500">Select a parent folder to see species.</p>'; 
+                
+                parentFolderSelectionSection.style.display = 'block'; 
                 speciesSelectionSection.style.display = 'none';
-                processingInfoSection.style.display = 'none';
+                logDisplayArea.style.display = 'none';
+
                 scientificNameInputElement.value = '';
                 dutchNameInputElement.value = '';
                 imageCountTextElement.textContent = 'Select a species to process.';
                 folderProcessingLogsContainer.style.display = 'none';
+                speciesSearchInputElement.value = ''; 
 
                 if (currentExampleImageUrl) {
                     URL.revokeObjectURL(currentExampleImageUrl);
@@ -403,22 +442,26 @@
                 exampleImageOverlayElement.style.height = '';
                 
                 allOriginalPhotoLocations = [];
-                subfolderSpeciesData = [];
+                groupedSpeciesData = [];
                 reclusterAndDisplay(); 
                 closeGalleryModal(); 
             }
             
             function resetUIForNewSpeciesSelection() {
-                locationListElement.innerHTML = '<li id="noLocations" class="text-gray-500">No locations added yet.</li>';
                 imageCountTextElement.textContent = 'Processing...';
-                folderProcessingLogsContainer.style.display = 'none';
+                folderProcessingLogsContainer.style.display = 'none'; 
                 folderProcessingLogsElement.innerHTML = '';
+                
+                parentFolderSelectionSection.style.display = 'none'; 
+                speciesSelectionSection.style.display = 'block'; 
+                logDisplayArea.style.display = 'none'; 
+
 
                 if (currentExampleImageUrl) {
                     URL.revokeObjectURL(currentExampleImageUrl);
                     currentExampleImageUrl = null;
                 }
-                exampleImageOverlayElement.style.display = 'none';
+                exampleImageOverlayElement.style.display = 'none'; 
                 exampleImageOverlayElement.src = "#";
                 exampleImageOverlayElement.style.width = ''; 
                 exampleImageOverlayElement.style.height = '';
@@ -440,13 +483,12 @@
 
             function getDynamicClusterThreshold() {
                 const zoom = map.getZoom();
-                // Adjusted thresholds for more aggressive clustering at lower zoom levels
-                if (zoom <= 6) return 50000;  // 50km
-                if (zoom <= 8) return 10000;  // 10km
-                if (zoom <= 10) return 2000;   // 2km
-                if (zoom <= 12) return 500;    // 500m
-                if (zoom <= 14) return 100;    // 100m
-                return 50; // 50m for higher zoom levels (was 25m)
+                if (zoom <= 6) return 50000;  
+                if (zoom <= 8) return 10000;  
+                if (zoom <= 10) return 2000;   
+                if (zoom <= 12) return 500;    
+                if (zoom <= 14) return 100;    
+                return 50; 
             }
             
             function parseExifDate(dateString) {
@@ -535,14 +577,11 @@
             function reclusterAndDisplay() {
                 activeClusterMarkers.forEach(marker => map.removeLayer(marker));
                 activeClusterMarkers = [];
-                const noLocLi = document.getElementById('noLocations');
+                // No direct handling of noLocationsLi here as it's removed from the main display
 
                 if (allOriginalPhotoLocations.length === 0) {
-                     if(noLocLi) noLocLi.style.display = 'list-item';
                     return;
                 }
-                 if(noLocLi) noLocLi.style.display = 'none';
-
 
                 const currentThreshold = getDynamicClusterThreshold();
                 let tempClusters = []; 
@@ -580,58 +619,7 @@
                  window.currentClustersForDebug = tempClusters; 
             }
             
-            function populateLocationList(photoData) { 
-                const currentNoLocationsLi = document.getElementById('noLocations');
-                if (currentNoLocationsLi) currentNoLocationsLi.style.display = 'none';
-                
-                const listItem = document.createElement('li');
-                listItem.className = 'text-gray-700 hover:bg-pink-50 p-1 rounded cursor-pointer flex justify-between items-center';
-                const textSpan = document.createElement('span');
-                textSpan.textContent = `${photoData.desc} (Lat: ${photoData.lat.toFixed(2)}, Lon: ${photoData.lon.toFixed(2)})`;
-                
-                listItem.onclick = () => {
-                    const currentClusters = window.currentClustersForDebug || [];
-                    for (const cluster of currentClusters) {
-                        const pointIndex = cluster.points.findIndex(p => p.desc === photoData.desc && p.lat === photoData.lat && p.lon === photoData.lon);
-                        if (pointIndex > -1) {
-                            openGalleryModal(cluster.points, pointIndex);
-                            map.setView([cluster.lat, cluster.lon], Math.max(map.getZoom(), 15)); 
-                            return;
-                        }
-                    }
-                    map.setView([photoData.lat, photoData.lon], Math.max(map.getZoom(), 15));
-                    openGalleryModal([photoData], 0); 
-                };
-
-                const removeButton = document.createElement('button');
-                removeButton.innerHTML = '&times;';
-                removeButton.className = 'ml-2 text-red-500 hover:text-red-700 font-bold text-xs px-1 rounded focus:outline-none';
-                removeButton.title = 'Remove location';
-                removeButton.onclick = (event) => {
-                    event.stopPropagation();
-                    const index = allOriginalPhotoLocations.findIndex(p => p.lat === photoData.lat && p.lon === photoData.lon && p.desc === photoData.desc);
-                    if (index > -1) {
-                        allOriginalPhotoLocations.splice(index, 1);
-                    }
-                    locationListElement.removeChild(listItem); 
-                    reclusterAndDisplay(); 
-                    
-                    const currentNoLocationsLi = document.getElementById('noLocations');
-                    if (locationListElement.children.length === 0 && currentNoLocationsLi) {
-                         currentNoLocationsLi.style.display = 'list-item';
-                    } else if (locationListElement.children.length === 0 && !currentNoLocationsLi) {
-                        const newNoLocLi = document.createElement('li');
-                        newNoLocLi.id = 'noLocations';
-                        newNoLocLi.className = 'text-gray-500';
-                        newNoLocLi.textContent = 'No locations added yet.';
-                        locationListElement.appendChild(newNoLocLi);
-                    }
-                    showToast('Location removed & map updated.', 'info');
-                };
-                listItem.appendChild(textSpan);
-                listItem.appendChild(removeButton);
-                locationListElement.appendChild(listItem);
-            }
+            // Removed populateLocationList and removeLocation functions as the list is gone
 
             function convertDMSToDD(degrees, minutes, seconds, direction) {
                 let dd = degrees + minutes / 60 + seconds / (60 * 60);
@@ -641,15 +629,18 @@
                 return dd;
             }
 
-            function extractNamesFromFolderName(folderName) {
+            function extractNamesAndGenusFromFolderName(folderName) { 
                 let scientificName = folderName;
                 let dutchName = '';
+                let genusName = scientificName.split(' ')[0]; 
+
                 const dutchNameMatch = folderName.match(/\(([^)]+)\)/);
                 if (dutchNameMatch && dutchNameMatch[1]) {
                     dutchName = dutchNameMatch[1].trim();
                     scientificName = folderName.substring(0, dutchNameMatch.index).trim();
+                    genusName = scientificName.split(' ')[0]; 
                 }
-                return { scientificName, dutchName };
+                return { scientificName, dutchName, genusName };
             }
 
             function hidePanel() {
@@ -669,24 +660,25 @@
                 setTimeout(() => { map.invalidateSize(); }, 310); 
             }
 
-            async function processSelectedSpecies(speciesData) {
-                resetUIForNewSpeciesSelection();
+            async function processFileList(filesToProcess, viewTitle, isGenusView = false) {
+                resetUIForNewSpeciesSelection(); 
                 
-                map.setView([47.5, 10.8], 5);
+                if (!isGenusView) { 
+                    map.setView([47.5, 10.8], 5);
+                } 
                 updateZoomLevel(); 
 
-                processingInfoSection.style.display = 'block';
+                logDisplayArea.style.display = 'block'; 
                 folderProcessingLogsContainer.style.display = 'block';
                 folderProcessingLogsElement.innerHTML = '';
+                // No addedLocationsSectionElement to manage
 
-                scientificNameInputElement.value = speciesData.scientificName;
-                dutchNameInputElement.value = speciesData.dutchName || "N/A";
 
                 let exampleImageFile = null;
                 let photosWithGPSCount = 0;
                 const promises = [];
 
-                for (const file of speciesData.filesInSubfolder) {
+                for (const file of filesToProcess) {
                      if (file.name.toLowerCase() === 'example.jpg') {
                         exampleImageFile = file;
                     }
@@ -717,7 +709,7 @@
                                     const longitude = convertDMSToDD(lonData[0], lonData[1], lonData[2], lonRef);
                                     const photoData = { lat: latitude, lon: longitude, desc: file.name, fileObject: file, date: dateTaken }; 
                                     allOriginalPhotoLocations.push(photoData);
-                                    populateLocationList(photoData); 
+                                    // No populateLocationList call here
                                     photosWithGPSCount++;
                                     logEntry.innerHTML += ` <span class="text-green-600">GPS found - Stored.</span>`;
                                 } else {
@@ -732,7 +724,7 @@
                     }
                 }
 
-                if (exampleImageFile) {
+                if (exampleImageFile && !isGenusView) { 
                     currentExampleImageUrl = URL.createObjectURL(exampleImageFile);
                     const tempImg = new Image();
                     tempImg.onload = function() {
@@ -759,17 +751,138 @@
                     exampleImageOverlayElement.style.display = 'none';
                     exampleImageOverlayElement.style.width = ''; 
                     exampleImageOverlayElement.style.height = '';
-                    showToast('"example.jpg" not found in this species folder.', 'info');
+                    if (!isGenusView && exampleImageFile) showToast('"example.jpg" not shown for genus view.', 'info');
+                    else if (!isGenusView) showToast('"example.jpg" not found in this species folder.', 'info');
                 }
                 
                 await Promise.all(promises); 
                 reclusterAndDisplay(); 
-                imageCountTextElement.innerHTML = `Processed <strong class="text-green-700">${speciesData.filesInSubfolder.length}</strong> files in species folder. 
+                imageCountTextElement.innerHTML = `Processed <strong class="text-green-700">${filesToProcess.length}</strong> files for ${viewTitle}. 
                                                <strong class="text-pink-600">${photosWithGPSCount}</strong> photo(s) with GPS added.`;
-                showToast(`Processing complete for ${speciesData.scientificName}. ${photosWithGPSCount} photos with GPS.`, 'success', 5000);
+                showToast(`Processing complete for ${viewTitle}. ${photosWithGPSCount} photos with GPS.`, 'success', 5000);
                 
                 hidePanel();
             }
+
+            async function processSelectedSpecies(speciesData) {
+                scientificNameInputElement.value = speciesData.scientificName;
+                dutchNameInputElement.value = speciesData.dutchName || "N/A";
+                await processFileList(speciesData.filesInSubfolder, speciesData.scientificName, false);
+            }
+
+            async function processSelectedGenus(genusGroupData) {
+                scientificNameInputElement.value = `${genusGroupData.genusName} family`;
+                dutchNameInputElement.value = "(Genus Overview)";
+                
+                let allFilesInGenus = [];
+                genusGroupData.speciesList.forEach(species => {
+                    allFilesInGenus = allFilesInGenus.concat(species.filesInSubfolder);
+                });
+                await processFileList(allFilesInGenus, `${genusGroupData.genusName} family`, true);
+            }
+
+
+            function renderSpeciesAccordion(filterText = "") {
+                speciesListContainer.innerHTML = ''; 
+                const searchTerm = filterText.toLowerCase();
+                let matchFound = false;
+
+                groupedSpeciesData.forEach(genusGroup => {
+                    const genusNameMatches = genusGroup.genusName.toLowerCase().includes(searchTerm);
+                    const matchingSpecies = genusGroup.speciesList.filter(species => 
+                        species.scientificName.toLowerCase().includes(searchTerm) ||
+                        (species.dutchName && species.dutchName.toLowerCase().includes(searchTerm))
+                    );
+
+                    if (!genusNameMatches && matchingSpecies.length === 0 && searchTerm) {
+                        return; 
+                    }
+                    matchFound = true;
+
+                    const genusDiv = document.createElement('div');
+                    const genusHeader = document.createElement('div');
+                    genusHeader.className = 'genus-header';
+                    
+                    const genusNameSpan = document.createElement('span');
+                    genusNameSpan.className = 'genus-name-text';
+                    genusNameSpan.textContent = `${genusGroup.genusName} (${genusGroup.speciesList.length})`;
+                    
+                    const arrowSpan = document.createElement('span');
+                    arrowSpan.className = 'arrow';
+                    arrowSpan.innerHTML = '&#9654;'; 
+
+                    genusHeader.appendChild(genusNameSpan);
+                    genusHeader.appendChild(arrowSpan);
+                    
+                    const speciesSubList = document.createElement('div');
+                    speciesSubList.className = 'species-sublist';
+
+                    if (genusGroup.isExpanded || (searchTerm && (genusNameMatches || matchingSpecies.length > 0))) {
+                        speciesSubList.classList.add('expanded');
+                        genusHeader.classList.add('expanded');
+                    }
+
+
+                    const speciesToDisplay = searchTerm && !genusNameMatches ? matchingSpecies : genusGroup.speciesList;
+
+                    speciesToDisplay.forEach(species => {
+                        const speciesItem = document.createElement('div');
+                        speciesItem.className = 'species-list-item';
+                        speciesItem.textContent = `${species.scientificName}${species.dutchName ? ` (${species.dutchName})` : ''}`;
+                        speciesItem.onclick = (event) => {
+                            event.stopPropagation(); 
+                            speciesListContainer.querySelectorAll('.species-list-item.selected').forEach(el => el.classList.remove('selected'));
+                            speciesListContainer.querySelectorAll('.genus-header.selected').forEach(el => el.classList.remove('selected')); 
+                            speciesItem.classList.add('selected'); 
+                            processSelectedSpecies(species);
+                        };
+                        speciesSubList.appendChild(speciesItem);
+                    });
+                    
+                    if (speciesToDisplay.length > 0 || !searchTerm) { 
+                        arrowSpan.onclick = (event) => {
+                            event.stopPropagation(); 
+                            genusGroup.isExpanded = !genusGroup.isExpanded;
+                            speciesSubList.classList.toggle('expanded');
+                            genusHeader.classList.toggle('expanded');
+                        };
+
+                        genusNameSpan.onclick = () => { 
+                            speciesListContainer.querySelectorAll('.species-list-item.selected').forEach(el => el.classList.remove('selected'));
+                            speciesListContainer.querySelectorAll('.genus-header.selected').forEach(el => el.classList.remove('selected'));
+                            genusHeader.classList.add('selected');
+                            processSelectedGenus(genusGroup);
+                            if (!genusGroup.isExpanded) { 
+                                genusGroup.isExpanded = true;
+                                speciesSubList.classList.add('expanded');
+                                genusHeader.classList.add('expanded');
+                            }
+                        };
+                        genusDiv.appendChild(genusHeader);
+                        genusDiv.appendChild(speciesSubList);
+                        speciesListContainer.appendChild(genusDiv);
+                    } else if (searchTerm && matchingSpecies.length === 0 && !genusNameMatches) {
+                        genusDiv.style.display = 'none';
+                    }
+                });
+                
+                if (!matchFound && searchTerm) {
+                     const noResultsP = document.createElement('p');
+                    noResultsP.className = 'text-gray-500 p-2';
+                    noResultsP.textContent = 'No matching species or genus found.';
+                    speciesListContainer.appendChild(noResultsP);
+                } else if (groupedSpeciesData.length === 0 || (!matchFound && !searchTerm)) {
+                     const noSpeciesP = document.createElement('p');
+                    noSpeciesP.id = 'noSpeciesFound'; 
+                    noSpeciesP.className = 'text-gray-500';
+                    noSpeciesP.textContent = 'No species subfolders found or parsed correctly.';
+                    speciesListContainer.appendChild(noSpeciesP);
+                }
+            }
+
+            speciesSearchInputElement.addEventListener('input', function(event) {
+                renderSpeciesAccordion(event.target.value);
+            });
 
 
             parentFolderInputElement.addEventListener('change', function(event) {
@@ -779,87 +892,65 @@
                     return;
                 }
                 
-                resetUIForNewParentFolder();
-                const detectedSubfolders = new Map(); 
+                resetUIForNewParentFolder(); 
+                parentFolderSelectionSection.style.display = 'none'; 
+                speciesSelectionSection.style.display = 'block';    
+                logDisplayArea.style.display = 'none';           
+                // addedLocationsSectionElement is removed
+
+                const tempGenusMap = new Map(); 
 
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     const relativePath = file.webkitRelativePath; 
-                    
                     const pathParts = relativePath.split('/');
-                    if (pathParts.length > 1) { 
-                        const actualSubfolderName = pathParts[pathParts.length - 2]; 
-                        if (pathParts[0] !== actualSubfolderName && pathParts.length > 2) { 
+
+                    if (pathParts.length > 2) { 
+                        const speciesSubfolderName = pathParts[1];
+                        const { scientificName, dutchName, genusName } = extractNamesAndGenusFromFolderName(speciesSubfolderName);
+
+                        if (!tempGenusMap.has(genusName)) {
+                            tempGenusMap.set(genusName, {
+                                genusName: genusName,
+                                isExpanded: false, 
+                                speciesList: []
+                            });
                         }
-                        if (pathParts.length > 2) { 
-                            const speciesSubfolderName = pathParts[1];
-                            if (!detectedSubfolders.has(speciesSubfolderName)) {
-                                detectedSubfolders.set(speciesSubfolderName, { filesInSubfolder: [] });
-                            }
-                            detectedSubfolders.get(speciesSubfolderName).filesInSubfolder.push(file);
-                        } else {
-                             console.log(`File ${file.name} (path: ${relativePath}) is not in a recognized species subfolder structure.`);
+                        
+                        let speciesEntry = tempGenusMap.get(genusName).speciesList.find(s => s.originalSubfolderName === speciesSubfolderName);
+                        if (!speciesEntry) {
+                            speciesEntry = {
+                                scientificName,
+                                dutchName,
+                                originalSubfolderName: speciesSubfolderName,
+                                filesInSubfolder: []
+                            };
+                            tempGenusMap.get(genusName).speciesList.push(speciesEntry);
                         }
+                        speciesEntry.filesInSubfolder.push(file);
                     }
                 }
 
-                subfolderSpeciesData = []; 
-                detectedSubfolders.forEach((data, originalSubfolderName) => {
-                    subfolderSpeciesData.push({
-                        ...extractNamesFromFolderName(originalSubfolderName), 
-                        originalSubfolderName: originalSubfolderName,
-                        filesInSubfolder: data.filesInSubfolder
-                    });
+                groupedSpeciesData = Array.from(tempGenusMap.values());
+                groupedSpeciesData.sort((a, b) => a.genusName.localeCompare(b.genusName));
+                groupedSpeciesData.forEach(genus => {
+                    genus.speciesList.sort((a,b) => a.scientificName.localeCompare(b.scientificName));
                 });
 
-                subfolderSpeciesData.sort((a, b) => a.scientificName.localeCompare(b.scientificName));
-
-                speciesListContainer.innerHTML = ''; 
-                if (subfolderSpeciesData.length > 0) {
-                    speciesSelectionSection.style.display = 'block';
-                    subfolderSpeciesData.forEach((species, index) => {
-                        const speciesDiv = document.createElement('div');
-                        speciesDiv.className = 'species-list-item';
-                        speciesDiv.textContent = `${species.scientificName}${species.dutchName ? ` (${species.dutchName})` : ''}`;
-                        speciesDiv.dataset.speciesIndex = index; 
-                        speciesDiv.onclick = function() {
-                            const currentlySelected = speciesListContainer.querySelector('.species-list-item.selected');
-                            if (currentlySelected) {
-                                currentlySelected.classList.remove('selected');
-                            }
-                            this.classList.add('selected');
-                            const selectedSpeciesData = subfolderSpeciesData[parseInt(this.dataset.speciesIndex)];
-                            processSelectedSpecies(selectedSpeciesData);
-                        };
-                        speciesListContainer.appendChild(speciesDiv);
-                    });
-                } else {
-                    speciesSelectionSection.style.display = 'block'; 
-                    const noSpeciesP = document.createElement('p');
-                    noSpeciesP.id = 'noSpeciesFound'; 
-                    noSpeciesP.className = 'text-gray-500';
-                    noSpeciesP.textContent = 'No species subfolders found in the selected parent folder.';
-                    speciesListContainer.appendChild(noSpeciesP);
-                }
+                renderSpeciesAccordion(); 
                 parentFolderInputElement.value = ''; 
             });
             
-            // Function to update zoom level display
+            map.on('zoomend', reclusterAndDisplay);
+            map.on('moveend', reclusterAndDisplay);
+
             function updateZoomLevel() {
                 if (zoomLevelDisplayElement) {
                     zoomLevelDisplayElement.textContent = 'Zoom: ' + map.getZoom();
                 }
             }
-
-            map.on('zoomend', function() {
-                reclusterAndDisplay();
-                updateZoomLevel(); // Update zoom display
-            });
-            map.on('moveend', function() {
-                reclusterAndDisplay();
-                // No need to update zoom on moveend unless zoom also changed
-            });
-            updateZoomLevel(); // Initial zoom level display
+            map.on('zoomend', updateZoomLevel);
+            updateZoomLevel(); 
 
 
             togglePanelButton.className = 'toggle-button-panel-visible';
@@ -873,6 +964,22 @@
                     togglePanelButton.textContent = 'Hide Details Panel';
                     togglePanelButton.className = 'toggle-button-panel-visible';
                     leftPanelContainer.insertBefore(togglePanelButton, panelContentWrapper);
+
+                    // Determine which panels to show inside panelContentWrapper
+                    if (groupedSpeciesData.length > 0) { // If a parent folder has been processed
+                        parentFolderSelectionSection.style.display = 'none';
+                        speciesSelectionSection.style.display = 'block';
+                        if (folderProcessingLogsContainer.style.display === 'block') { // Only show if logs were made visible
+                            logDisplayArea.style.display = 'block';
+                        } else {
+                            logDisplayArea.style.display = 'none';
+                        }
+                    } else { // Initial state or after a full reset
+                        parentFolderSelectionSection.style.display = 'block';
+                        speciesSelectionSection.style.display = 'none';
+                        logDisplayArea.style.display = 'none';
+                    }
+
                     mapContainerOuterElement.classList.remove('lg:w-full');
                     mapContainerOuterElement.classList.add('lg:w-2/3');
                 } else { 
