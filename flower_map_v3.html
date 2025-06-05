@@ -112,6 +112,7 @@
         #mapContainerOuter { 
             position: relative;
             transition: margin-left 0.3s ease-in-out; 
+            margin-left: 24px; /* Initial margin for the peeking handle (HANDLE_WIDTH) */
         }
         #exampleImageOverlay {
             position: absolute;
@@ -135,20 +136,22 @@
             width: 350px; 
             background-color: white;
             z-index: 1002; 
-            transform: translateX(-350px); 
+            transform: translateX(calc(-100% + 24px)); /* Panel mostly off-screen, 24px (HANDLE_WIDTH) peeking */
             transition: transform 0.3s ease-in-out; 
             box-shadow: 2px 0 10px rgba(0,0,0,0.15);
             display: flex; 
             flex-direction: column;
+            border: 2px solid red; /* TEMPORARY DEBUG BORDER */
+        }
+        #leftPanelContainer.panel-open {
+            transform: translateX(0); 
         }
         #panelContentWrapper{
              padding: 1.5rem; 
              height: 100%; 
-             overflow-y: auto; /* This will handle scrolling for the whole panel if needed */
+             overflow-y: auto;
              flex-grow: 1;
-             margin-right: 24px; 
-             display: flex; /* Added */
-             flex-direction: column; /* Added */
+             margin-right: 24px; /* Space for the handle */
         }
 
         #slidePanelToggle { 
@@ -160,7 +163,7 @@
             height: 48px; 
             background-color: #6B7280; 
             color: white;
-            border: none;
+            border: 1px solid gold; /* DEBUG BORDER FOR HANDLE */
             border-top-right-radius: 6px; 
             border-bottom-right-radius: 6px;
             cursor: pointer;
@@ -224,19 +227,13 @@
         }
          #galleryCloseButton:hover { background-color: rgba(200, 200, 200, 1); color: #000; }
         
-        #speciesSelectionSection {
-            display: flex;
-            flex-direction: column;
-            /* flex-grow: 1;  Will be added/removed by JS */
-        }
         #speciesListContainer {
-            flex-grow: 1; /* Allows it to take available space in speciesSelectionSection */
+            max-height: calc(100vh - 250px); 
             overflow-y: auto;
             border: 1px solid #e5e7eb; 
             border-radius: 0.375rem; 
             padding: 0.5rem;
             background-color: #f9fafb; 
-            min-height: 100px; /* Ensure it has some minimum height even if empty initially */
         }
         .genus-header {
             padding: 0.6rem 0.5rem;
@@ -449,10 +446,16 @@
             const PANEL_WIDTH = 350; 
             const HANDLE_WIDTH = 24; 
 
-            // Initial UI State - Panel Closed
+            // Initial UI State - Panel starts closed with handle peeking
             leftPanelContainer.style.transform = `translateX(calc(-${PANEL_WIDTH}px + ${HANDLE_WIDTH}px))`; 
             mapContainerOuterElement.style.marginLeft = `${HANDLE_WIDTH}px`; 
             slidePanelToggleButton.innerHTML = '☰'; 
+            isPanelOpen = false; // Ensure consistent initial state
+
+            // What to show when panel is opened initially
+            parentFolderSelectionSection.style.display = 'block';
+            speciesSelectionSection.style.display = 'none';
+            logDisplayArea.style.display = 'none';
 
 
             function showToast(message, type = 'success', duration = 3000) {
@@ -473,8 +476,6 @@
 
                 scientificNameInputElement.value = '';
                 dutchNameInputElement.value = '';
-                // imageCountTextElement is removed
-                // folderProcessingLogsContainer is removed
                 speciesSearchInputElement.value = ''; 
 
                 if (currentExampleImageUrl) {
@@ -493,7 +494,6 @@
             }
             
             function resetUIForNewSpeciesSelection() {
-                // imageCountTextElement is removed
                 folderProcessingLogsContainer.style.display = 'none'; 
                 folderProcessingLogsElement.innerHTML = '';
                 
@@ -686,29 +686,40 @@
             }
 
             function toggleSlidePanel() {
+                console.log('--- Toggling panel ---'); // DEBUG
+                console.log('Current isPanelOpen state BEFORE toggle:', isPanelOpen); // DEBUG
+                
                 isPanelOpen = !isPanelOpen;
+                console.log('Panel state AFTER toggle:', isPanelOpen); // DEBUG
+
                 if (isPanelOpen) {
                     leftPanelContainer.style.transform = 'translateX(0)';
                     mapContainerOuterElement.style.marginLeft = `${PANEL_WIDTH}px`;
                     slidePanelToggleButton.innerHTML = '&times;'; 
                     
+                    console.log('Panel is now open. groupedSpeciesData length:', groupedSpeciesData.length); // DEBUG
+                    
                     if (groupedSpeciesData.length === 0) { 
                         parentFolderSelectionSection.style.display = 'block';
                         speciesSelectionSection.style.display = 'none';
                         logDisplayArea.style.display = 'none';
+                        console.log('Set to show PARENT FOLDER selection.'); // DEBUG
                     } else { 
                         parentFolderSelectionSection.style.display = 'none';
                         speciesSelectionSection.style.display = 'block';
                         logDisplayArea.style.display = 'none'; 
-                        // Collapse all genera when panel is opened after initial load
+                        // When panel is re-opened after parent folder selection, collapse all genera
                         groupedSpeciesData.forEach(genus => genus.isExpanded = false);
                         renderSpeciesAccordion(speciesSearchInputElement.value); 
+                        console.log('Set to show SPECIES selection, all genera collapsed.'); // DEBUG
                     }
                 } else { 
+                    console.log('Panel is now closed.'); // DEBUG
                     leftPanelContainer.style.transform = `translateX(calc(-${PANEL_WIDTH}px + ${HANDLE_WIDTH}px))`;
                     mapContainerOuterElement.style.marginLeft = `${HANDLE_WIDTH}px`;
                     slidePanelToggleButton.innerHTML = '☰'; 
                 }
+                console.log('leftPanelContainer transform AFTER toggle:', leftPanelContainer.style.transform); // DEBUG
                 setTimeout(() => {
                     map.invalidateSize();
                 }, 300); 
@@ -725,15 +736,9 @@
                 }
                 updateZoomLevel(); 
 
-                // Only show logs if there's something to process
-                if (filesToProcess.length > 0) {
-                    logDisplayArea.style.display = 'block'; 
-                    folderProcessingLogsContainer.style.display = 'block';
-                    folderProcessingLogsElement.innerHTML = '';
-                } else {
-                    logDisplayArea.style.display = 'none';
-                }
-
+                logDisplayArea.style.display = 'none'; // Initially hide log area for processing
+                folderProcessingLogsContainer.style.display = 'none'; // Hide log container as well
+                // folderProcessingLogsElement.innerHTML = ''; // Already cleared in reset
 
                 let exampleImageFile = null;
                 let photosWithGPSCount = 0;
@@ -744,7 +749,6 @@
                         exampleImageFile = file;
                     }
                     if (['image/jpeg', 'image/tiff'].includes(file.type) || ['.jpg', '.jpeg', '.tif', '.tiff'].includes(file.name.substring(file.name.lastIndexOf('.')).toLowerCase())) {
-                        // No UI log per file here, only console for errors
                         promises.push(new Promise(async (resolveFile) => {
                             try {
                                 const exifData = await new Promise((resolve, reject) => {
@@ -820,13 +824,8 @@
                 }
                 updateZoomLevel();
 
-                // Update this message to be more generic as logs are not shown per file
-                if (logDisplayArea.style.display === 'block') { // Check if logs were meant to be shown
-                    imageCountTextElement.innerHTML = `Processed <strong class="text-green-700">${filesToProcess.length}</strong> files for ${viewTitle}. 
-                                               <strong class="text-pink-600">${photosWithGPSCount}</strong> photo(s) with GPS added.`;
-                }
                 showToast(`Displaying ${photosWithGPSCount} photo(s) for ${viewTitle}.`, 'success', 4000);
-                logDisplayArea.style.display = 'none'; 
+                // Log display area remains hidden as per user request
                 
                 if (isPanelOpen) { 
                     toggleSlidePanel(); 
@@ -886,17 +885,15 @@
                     const speciesSubList = document.createElement('div');
                     speciesSubList.className = 'species-sublist';
 
-                    // Logic for expansion:
-                    // - If there's a search term AND this genus or its species match, it should be expanded for the search.
-                    // - If there's NO search term, it should use its stored isExpanded state.
-                    if (searchTerm) {
-                        if (genusNameMatches || matchingSpecies.length > 0) {
-                            speciesSubList.classList.add('expanded');
-                            genusHeader.classList.add('expanded');
+                    // Expand if genus name matches or if filtering and species match, or if already expanded
+                    if (genusGroup.isExpanded || (searchTerm && (genusNameMatches || matchingSpecies.length > 0) && !genusGroup.hasOwnProperty('isExpanded'))) {
+                        if (!searchTerm || (searchTerm && (genusNameMatches || matchingSpecies.length > 0))) {
+                             speciesSubList.classList.add('expanded');
+                             genusHeader.classList.add('expanded');
                         }
-                    } else if (genusGroup.isExpanded) {
-                        speciesSubList.classList.add('expanded');
-                        genusHeader.classList.add('expanded');
+                    } else if (genusGroup.isExpanded && !searchTerm) { 
+                         speciesSubList.classList.add('expanded');
+                         genusHeader.classList.add('expanded');
                     }
 
 
@@ -919,7 +916,7 @@
                     if (speciesToDisplay.length > 0 || !searchTerm) { 
                         arrowSpan.onclick = (event) => {
                             event.stopPropagation(); 
-                            genusGroup.isExpanded = !genusGroup.isExpanded; // Toggle state
+                            genusGroup.isExpanded = !genusGroup.isExpanded; 
                             speciesSubList.classList.toggle('expanded');
                             genusHeader.classList.toggle('expanded');
                         };
@@ -929,6 +926,11 @@
                             speciesListContainer.querySelectorAll('.genus-header.selected').forEach(el => el.classList.remove('selected'));
                             genusHeader.classList.add('selected');
                             processSelectedGenus(genusGroup);
+                            // if (!genusGroup.isExpanded) { 
+                            //     genusGroup.isExpanded = true;
+                            //     speciesSubList.classList.add('expanded');
+                            //     genusHeader.classList.add('expanded');
+                            // } // Keep expansion logic with arrow click for name click
                         };
                         genusDiv.appendChild(genusHeader);
                         genusDiv.appendChild(speciesSubList);
@@ -1043,7 +1045,7 @@
             map.on('zoomend', updateZoomLevel);
             updateZoomLevel(); 
 
-            // Open panel on startup
+            // Open panel on startup by calling the toggle function once
             toggleSlidePanel();
 
             const mapElement = document.getElementById('map'); 
