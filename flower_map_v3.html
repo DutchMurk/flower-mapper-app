@@ -112,7 +112,7 @@
         #mapContainerOuter { 
             position: relative;
             transition: margin-left 0.3s ease-in-out; 
-            margin-left: 24px; /* Initial margin for the peeking handle (HANDLE_WIDTH) */
+            margin-left: 24px; 
         }
         #exampleImageOverlay {
             position: absolute;
@@ -136,22 +136,19 @@
             width: 350px; 
             background-color: white;
             z-index: 1002; 
-            transform: translateX(calc(-100% + 24px)); /* Panel mostly off-screen, 24px (HANDLE_WIDTH) peeking */
+            transform: translateX(calc(-100% + 24px)); 
             transition: transform 0.3s ease-in-out; 
             box-shadow: 2px 0 10px rgba(0,0,0,0.15);
             display: flex; 
             flex-direction: column;
-            border: 2px solid red; /* TEMPORARY DEBUG BORDER */
-        }
-        #leftPanelContainer.panel-open {
-            transform: translateX(0); 
+            /* border: 2px solid red; REMOVED DEBUG BORDER */
         }
         #panelContentWrapper{
              padding: 1.5rem; 
              height: 100%; 
              overflow-y: auto;
              flex-grow: 1;
-             margin-right: 24px; /* Space for the handle */
+             margin-right: 24px; 
         }
 
         #slidePanelToggle { 
@@ -163,7 +160,7 @@
             height: 48px; 
             background-color: #6B7280; 
             color: white;
-            border: 1px solid gold; /* DEBUG BORDER FOR HANDLE */
+            border: none; /* REMOVED DEBUG BORDER FOR HANDLE */
             border-top-right-radius: 6px; 
             border-bottom-right-radius: 6px;
             cursor: pointer;
@@ -345,7 +342,7 @@
 
                     <div id="logDisplayArea" class="bg-white p-6 rounded-lg shadow-lg panel-section" style="display: none;">
                         <div id="folderProcessResult" class="mt-1 text-sm space-y-2">
-                            <p id="imageCountText" style="display:none;">Select a species to process.</p>
+                            <p id="imageCountText" style="display:none;"></p>
                             <div id="folderProcessingLogsContainer" style="display: none;">
                                  <h4 class="font-semibold text-gray-700 mb-2">Processing Log:</h4>
                                  <div id="folderProcessingLogs"></div>
@@ -450,9 +447,8 @@
             leftPanelContainer.style.transform = `translateX(calc(-${PANEL_WIDTH}px + ${HANDLE_WIDTH}px))`; 
             mapContainerOuterElement.style.marginLeft = `${HANDLE_WIDTH}px`; 
             slidePanelToggleButton.innerHTML = '☰'; 
-            isPanelOpen = false; // Ensure consistent initial state
+            isPanelOpen = false; 
 
-            // What to show when panel is opened initially
             parentFolderSelectionSection.style.display = 'block';
             speciesSelectionSection.style.display = 'none';
             logDisplayArea.style.display = 'none';
@@ -686,40 +682,28 @@
             }
 
             function toggleSlidePanel() {
-                console.log('--- Toggling panel ---'); // DEBUG
-                console.log('Current isPanelOpen state BEFORE toggle:', isPanelOpen); // DEBUG
-                
                 isPanelOpen = !isPanelOpen;
-                console.log('Panel state AFTER toggle:', isPanelOpen); // DEBUG
-
                 if (isPanelOpen) {
                     leftPanelContainer.style.transform = 'translateX(0)';
                     mapContainerOuterElement.style.marginLeft = `${PANEL_WIDTH}px`;
                     slidePanelToggleButton.innerHTML = '&times;'; 
                     
-                    console.log('Panel is now open. groupedSpeciesData length:', groupedSpeciesData.length); // DEBUG
-                    
                     if (groupedSpeciesData.length === 0) { 
                         parentFolderSelectionSection.style.display = 'block';
                         speciesSelectionSection.style.display = 'none';
                         logDisplayArea.style.display = 'none';
-                        console.log('Set to show PARENT FOLDER selection.'); // DEBUG
                     } else { 
                         parentFolderSelectionSection.style.display = 'none';
                         speciesSelectionSection.style.display = 'block';
                         logDisplayArea.style.display = 'none'; 
-                        // When panel is re-opened after parent folder selection, collapse all genera
                         groupedSpeciesData.forEach(genus => genus.isExpanded = false);
                         renderSpeciesAccordion(speciesSearchInputElement.value); 
-                        console.log('Set to show SPECIES selection, all genera collapsed.'); // DEBUG
                     }
                 } else { 
-                    console.log('Panel is now closed.'); // DEBUG
                     leftPanelContainer.style.transform = `translateX(calc(-${PANEL_WIDTH}px + ${HANDLE_WIDTH}px))`;
                     mapContainerOuterElement.style.marginLeft = `${HANDLE_WIDTH}px`;
                     slidePanelToggleButton.innerHTML = '☰'; 
                 }
-                console.log('leftPanelContainer transform AFTER toggle:', leftPanelContainer.style.transform); // DEBUG
                 setTimeout(() => {
                     map.invalidateSize();
                 }, 300); 
@@ -736,9 +720,20 @@
                 }
                 updateZoomLevel(); 
 
-                logDisplayArea.style.display = 'none'; // Initially hide log area for processing
-                folderProcessingLogsContainer.style.display = 'none'; // Hide log container as well
-                // folderProcessingLogsElement.innerHTML = ''; // Already cleared in reset
+                // Show log area only if there are files to process (EXIF readable ones)
+                let exifProcessableFileCount = filesToProcess.filter(file => 
+                    ['image/jpeg', 'image/tiff'].includes(file.type) || 
+                    ['.jpg', '.jpeg', '.tif', '.tiff'].includes(file.name.substring(file.name.lastIndexOf('.')).toLowerCase())
+                ).length;
+
+                if (exifProcessableFileCount > 0) {
+                    logDisplayArea.style.display = 'block'; 
+                    folderProcessingLogsContainer.style.display = 'block';
+                    folderProcessingLogsElement.innerHTML = '';
+                } else {
+                     logDisplayArea.style.display = 'none';
+                }
+
 
                 let exampleImageFile = null;
                 let photosWithGPSCount = 0;
@@ -749,6 +744,13 @@
                         exampleImageFile = file;
                     }
                     if (['image/jpeg', 'image/tiff'].includes(file.type) || ['.jpg', '.jpeg', '.tif', '.tiff'].includes(file.name.substring(file.name.lastIndexOf('.')).toLowerCase())) {
+                        if (folderProcessingLogsElement) { // Check if log element exists
+                            const logEntry = document.createElement('p');
+                            logEntry.textContent = `Processing for EXIF: ${file.name}...`;
+                            folderProcessingLogsElement.appendChild(logEntry);
+                            folderProcessingLogsElement.scrollTop = folderProcessingLogsElement.scrollHeight;
+                        }
+
                         promises.push(new Promise(async (resolveFile) => {
                             try {
                                 const exifData = await new Promise((resolve, reject) => {
@@ -771,9 +773,19 @@
                                     const photoData = { lat: latitude, lon: longitude, desc: file.name, fileObject: file, date: dateTaken }; 
                                     allOriginalPhotoLocations.push(photoData);
                                     photosWithGPSCount++;
+                                    if (folderProcessingLogsElement && folderProcessingLogsElement.lastChild && folderProcessingLogsElement.lastChild.textContent.startsWith(`Processing for EXIF: ${file.name}`)) {
+                                       folderProcessingLogsElement.lastChild.innerHTML += ` <span class="text-green-600">GPS found - Stored.</span>`;
+                                    }
+                                } else {
+                                     if (folderProcessingLogsElement && folderProcessingLogsElement.lastChild && folderProcessingLogsElement.lastChild.textContent.startsWith(`Processing for EXIF: ${file.name}`)) {
+                                       folderProcessingLogsElement.lastChild.innerHTML += ` <span class="text-gray-500">No GPS data.</span>`;
+                                    }
                                 }
                             } catch (error) {
                                 console.error("Error EXIF " + file.name + ":", error);
+                                if (folderProcessingLogsElement && folderProcessingLogsElement.lastChild && folderProcessingLogsElement.lastChild.textContent.startsWith(`Processing for EXIF: ${file.name}`)) {
+                                    folderProcessingLogsElement.lastChild.innerHTML += ` <span class="text-red-600">Error (${error.message}).</span>`;
+                                }
                             }
                             resolveFile();
                         }));
@@ -824,8 +836,16 @@
                 }
                 updateZoomLevel();
 
+                if (logDisplayArea.style.display === 'block') { // If logs were shown
+                    imageCountTextElement.innerHTML = `Processed <strong class="text-green-700">${filesToProcess.length}</strong> files for ${viewTitle}. 
+                                                   <strong class="text-pink-600">${photosWithGPSCount}</strong> photo(s) with GPS added.`;
+                }
                 showToast(`Displaying ${photosWithGPSCount} photo(s) for ${viewTitle}.`, 'success', 4000);
-                // Log display area remains hidden as per user request
+                
+                // Hide log area after a short delay after showing the summary toast
+                setTimeout(() => {
+                    logDisplayArea.style.display = 'none';
+                }, 5000);
                 
                 if (isPanelOpen) { 
                     toggleSlidePanel(); 
@@ -885,15 +905,9 @@
                     const speciesSubList = document.createElement('div');
                     speciesSubList.className = 'species-sublist';
 
-                    // Expand if genus name matches or if filtering and species match, or if already expanded
-                    if (genusGroup.isExpanded || (searchTerm && (genusNameMatches || matchingSpecies.length > 0) && !genusGroup.hasOwnProperty('isExpanded'))) {
-                        if (!searchTerm || (searchTerm && (genusNameMatches || matchingSpecies.length > 0))) {
-                             speciesSubList.classList.add('expanded');
-                             genusHeader.classList.add('expanded');
-                        }
-                    } else if (genusGroup.isExpanded && !searchTerm) { 
-                         speciesSubList.classList.add('expanded');
-                         genusHeader.classList.add('expanded');
+                    if (genusGroup.isExpanded || (searchTerm && (genusNameMatches || matchingSpecies.length > 0))) {
+                        speciesSubList.classList.add('expanded');
+                        genusHeader.classList.add('expanded');
                     }
 
 
@@ -926,11 +940,6 @@
                             speciesListContainer.querySelectorAll('.genus-header.selected').forEach(el => el.classList.remove('selected'));
                             genusHeader.classList.add('selected');
                             processSelectedGenus(genusGroup);
-                            // if (!genusGroup.isExpanded) { 
-                            //     genusGroup.isExpanded = true;
-                            //     speciesSubList.classList.add('expanded');
-                            //     genusHeader.classList.add('expanded');
-                            // } // Keep expansion logic with arrow click for name click
                         };
                         genusDiv.appendChild(genusHeader);
                         genusDiv.appendChild(speciesSubList);
