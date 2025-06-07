@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flower Location Mapper</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.3"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
      crossorigin=""/>
@@ -41,42 +41,6 @@
         .custom-toast.show {
             opacity: 1;
         }
-        .custom-toast.success {
-            background-color: #28a745;
-        }
-        .custom-toast.error {
-            background-color: #dc3545;
-        }
-        .custom-toast.info {
-            background-color: #17a2b8;
-        }
-        input[type="file"]::file-selector-button {
-            margin-right: 0.5rem;
-            padding: 0.5rem 1rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.375rem;
-            background-color: #FFF;
-            color: #374151;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        input[type="file"]::file-selector-button:hover {
-            background-color: #F9FAFB;
-        }
-        #folderProcessingLogs {
-            max-height: 100px; 
-            overflow-y: auto;
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.8rem;
-            line-height: 1.4;
-        }
-        #folderProcessingLogs p {
-            margin-bottom: 0.25rem;
-        }
         .title-input {
             background-color: transparent;
             border: none;
@@ -86,10 +50,6 @@
             width: 100%;
             padding-left: 0.5rem;
             padding-right: 0.5rem;
-        }
-        .title-input:focus {
-            ring-width: 0;
-            box-shadow: none;
         }
         .scientific-name-input {
             font-size: 1.875rem; 
@@ -112,7 +72,7 @@
         #mapContainerOuter { 
             position: relative;
             transition: margin-left 0.3s ease-in-out; 
-            margin-left: 24px; 
+            margin-left: 0px; 
         }
         #exampleImageOverlay {
             position: absolute;
@@ -141,7 +101,6 @@
             box-shadow: 2px 0 10px rgba(0,0,0,0.15);
             display: flex; 
             flex-direction: column;
-            /* border: 2px solid red; REMOVED DEBUG BORDER */
         }
         #panelContentWrapper{
              padding: 1.5rem; 
@@ -160,7 +119,7 @@
             height: 48px; 
             background-color: #6B7280; 
             color: white;
-            border: none; /* REMOVED DEBUG BORDER FOR HANDLE */
+            border: none; 
             border-top-right-radius: 6px; 
             border-bottom-right-radius: 6px;
             cursor: pointer;
@@ -186,17 +145,20 @@
             box-shadow: 0 0 5px rgba(0,0,0,0.4);
         }
 
-        #galleryModal {
+        #galleryModal, #startupModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.75); z-index: 10001; 
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out;
         }
-        #galleryModal.show { opacity: 1; pointer-events: auto; }
-        .gallery-content {
+        #galleryModal.show, #startupModal.show { opacity: 1; pointer-events: auto; }
+        .modal-content {
             position: relative; background-color: white; padding: 20px; border-radius: 0.5rem;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;
-            max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column;
+            max-width: 90vw;
+        }
+        .gallery-content {
+             max-height: 90vh; display: flex; flex-direction: column;
         }
         .gallery-image-container {
             flex-grow: 1; display: flex; align-items: center; justify-content: center;
@@ -224,8 +186,13 @@
         }
          #galleryCloseButton:hover { background-color: rgba(200, 200, 200, 1); color: #000; }
         
+        #speciesSelectionSection { 
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
         #speciesListContainer {
-            max-height: calc(100vh - 250px); 
+            flex-grow: 1; 
             overflow-y: auto;
             border: 1px solid #e5e7eb; 
             border-radius: 0.375rem; 
@@ -317,18 +284,6 @@
             <div id="leftPanelContainer" class=""> 
                 <button id="slidePanelToggle">☰</button> 
                 <div id="panelContentWrapper" class="grow overflow-auto">
-                    <div id="parentFolderSelectionSection" class="bg-white p-6 rounded-lg shadow-lg panel-section">
-                        <h2 class="text-xl font-semibold mb-4 text-purple-600">Select Parent Folder</h2>
-                        <p class="text-sm text-gray-600 mb-3">
-                            Choose the main folder containing subfolders for each species (e.g., "Orchideeenfoto's").
-                        </p>
-                        <div>
-                            <label for="parentFolderInput" class="block text-sm font-medium text-gray-700">Select Parent Folder:</label>
-                            <input type="file" id="parentFolderInput" webkitdirectory directory
-                                   class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"/>
-                        </div>
-                    </div>
-                    
                     <div id="speciesSelectionSection" class="bg-white p-6 rounded-lg shadow-lg panel-section" style="display: none;">
                         <h2 class="text-xl font-semibold mb-2 text-green-600">Select Species by Genus</h2>
                         <input type="text" id="speciesSearchInput" placeholder="Search species/genus..."
@@ -338,24 +293,14 @@
                         </p>
                         <div id="speciesListContainer">
                         </div>
-                    </div>
-
-                    <div id="logDisplayArea" class="bg-white p-6 rounded-lg shadow-lg panel-section" style="display: none;">
-                        <div id="folderProcessResult" class="mt-1 text-sm space-y-2">
-                            <p id="imageCountText" style="display:none;"></p>
-                            <div id="folderProcessingLogsContainer" style="display: none;">
-                                 <h4 class="font-semibold text-gray-700 mb-2">Processing Log:</h4>
-                                 <div id="folderProcessingLogs"></div>
-                            </div>
-                        </div>
-                         <p class="mt-4 text-xs text-gray-500">
-                            Supports JPG, TIFF images with GPS EXIF data.
-                        </p>
+                        <button id="loadNewFolderButton" class="w-full mt-4 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out">
+                            Load New Parent Folder
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div id="mapContainerOuter" class="lg:w-full h-[500px] md:h-[600px] lg:h-[calc(100vh-12rem)] shadow-lg rounded-lg overflow-hidden"> 
+            <div id="mapContainerOuter" class="w-full h-[500px] md:h-[600px] lg:h-[calc(100vh-12rem)] shadow-lg rounded-lg overflow-hidden"> 
                 <div id="map"></div>
                 <img id="exampleImageOverlay" src="#" alt="Example flower image" />
                 <div id="zoomLevelDisplay">Zoom: N/A</div> 
@@ -366,6 +311,28 @@
             <p>&copy; <span id="currentYear"></span> Flower Mapper. Happy exploring!</p>
         </footer>
     </div>
+    
+    <!-- Startup Modal -->
+    <div id="startupModal" class="">
+        <div class="modal-content bg-white p-8 rounded-lg shadow-2xl">
+            <div id="startupModalContent">
+                <h2 class="text-2xl font-bold mb-4 text-purple-600">Welcome to Flower Mapper!</h2>
+                <p class="text-gray-600 mb-6">
+                    To begin, please select the main parent folder that contains all your species subfolders.
+                </p>
+                <div>
+                    <label for="parentFolderInput" class="block text-sm font-medium text-gray-700 sr-only">Select Parent Folder:</label>
+                    <input type="file" id="parentFolderInput" webkitdirectory directory
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"/>
+                </div>
+            </div>
+             <div id="startupModalProcessing" style="display: none;">
+                 <h2 class="text-2xl font-bold mb-4 text-purple-600">Processing Photos...</h2>
+                 <p class="text-gray-600">Please wait, this may take a moment for large folders.</p>
+            </div>
+        </div>
+    </div>
+
 
     <div id="galleryModal">
         <div class="gallery-content">
@@ -424,15 +391,14 @@
             let currentGalleryIndex = 0;
             let currentGalleryObjectUrls = []; 
 
+            const startupModal = document.getElementById('startupModal');
+            const startupModalContent = document.getElementById('startupModalContent');
+            const startupModalProcessing = document.getElementById('startupModalProcessing');
             const parentFolderInputElement = document.getElementById('parentFolderInput'); 
-            const parentFolderSelectionSection = document.getElementById('parentFolderSelectionSection'); 
             const speciesSelectionSection = document.getElementById('speciesSelectionSection');
             const speciesListContainer = document.getElementById('speciesListContainer');
             const speciesSearchInputElement = document.getElementById('speciesSearchInput'); 
-            const logDisplayArea = document.getElementById('logDisplayArea'); 
-            const imageCountTextElement = document.getElementById('imageCountText');
-            const folderProcessingLogsContainer = document.getElementById('folderProcessingLogsContainer');
-            const folderProcessingLogsElement = document.getElementById('folderProcessingLogs');
+            const loadNewFolderButton = document.getElementById('loadNewFolderButton');
             
             const slidePanelToggleButton = document.getElementById('slidePanelToggle'); 
             const leftPanelContainer = document.getElementById('leftPanelContainer'); 
@@ -443,15 +409,10 @@
             const PANEL_WIDTH = 350; 
             const HANDLE_WIDTH = 24; 
 
-            // Initial UI State - Panel starts closed with handle peeking
-            leftPanelContainer.style.transform = `translateX(calc(-${PANEL_WIDTH}px + ${HANDLE_WIDTH}px))`; 
-            mapContainerOuterElement.style.marginLeft = `${HANDLE_WIDTH}px`; 
-            slidePanelToggleButton.innerHTML = '☰'; 
-            isPanelOpen = false; 
-
-            parentFolderSelectionSection.style.display = 'block';
-            speciesSelectionSection.style.display = 'none';
-            logDisplayArea.style.display = 'none';
+            // Initial UI State
+            mapContainerOuterElement.style.marginLeft = '0px'; 
+            slidePanelToggleButton.style.display = 'none'; 
+            startupModal.classList.add('show'); 
 
 
             function showToast(message, type = 'success', duration = 3000) {
@@ -464,12 +425,6 @@
             }
             
             function resetUIForNewParentFolder() { 
-                speciesListContainer.innerHTML = '<p id="noSpeciesFound" class="text-gray-500">Select a parent folder to see species.</p>'; 
-                
-                parentFolderSelectionSection.style.display = 'block'; 
-                speciesSelectionSection.style.display = 'none';
-                logDisplayArea.style.display = 'none';
-
                 scientificNameInputElement.value = '';
                 dutchNameInputElement.value = '';
                 speciesSearchInputElement.value = ''; 
@@ -487,26 +442,20 @@
                 groupedSpeciesData = [];
                 reclusterAndDisplay(); 
                 closeGalleryModal(); 
+                
+                startupModal.classList.add('show');
+                startupModalContent.style.display = 'block';
+                startupModalProcessing.style.display = 'none';
+                slidePanelToggleButton.style.display = 'none';
+                if (isPanelOpen) { toggleSlidePanel(); }
+                mapContainerOuterElement.style.marginLeft = '0px';
+                map.setView([51.1657, 10.4515], 5); 
             }
             
+            loadNewFolderButton.addEventListener('click', resetUIForNewParentFolder);
+
+
             function resetUIForNewSpeciesSelection() {
-                folderProcessingLogsContainer.style.display = 'none'; 
-                folderProcessingLogsElement.innerHTML = '';
-                
-                parentFolderSelectionSection.style.display = 'none'; 
-                speciesSelectionSection.style.display = 'block'; 
-                logDisplayArea.style.display = 'none'; 
-
-
-                if (currentExampleImageUrl) {
-                    URL.revokeObjectURL(currentExampleImageUrl);
-                    currentExampleImageUrl = null;
-                }
-                exampleImageOverlayElement.style.display = 'none'; 
-                exampleImageOverlayElement.src = "#";
-                exampleImageOverlayElement.style.width = ''; 
-                exampleImageOverlayElement.style.height = '';
-                
                 allOriginalPhotoLocations = [];
                 reclusterAndDisplay(); 
                 closeGalleryModal(); 
@@ -688,14 +637,9 @@
                     mapContainerOuterElement.style.marginLeft = `${PANEL_WIDTH}px`;
                     slidePanelToggleButton.innerHTML = '&times;'; 
                     
-                    if (groupedSpeciesData.length === 0) { 
-                        parentFolderSelectionSection.style.display = 'block';
-                        speciesSelectionSection.style.display = 'none';
-                        logDisplayArea.style.display = 'none';
-                    } else { 
-                        parentFolderSelectionSection.style.display = 'none';
+                    // Only show species selection after folder has been chosen
+                    if (groupedSpeciesData.length > 0) { 
                         speciesSelectionSection.style.display = 'block';
-                        logDisplayArea.style.display = 'none'; 
                         groupedSpeciesData.forEach(genus => genus.isExpanded = false);
                         renderSpeciesAccordion(speciesSearchInputElement.value); 
                     }
@@ -714,44 +658,26 @@
 
             async function processFileList(filesToProcess, viewTitle, isGenusView = false) {
                 resetUIForNewSpeciesSelection(); 
-                
-                if (!isGenusView && allOriginalPhotoLocations.length === 0) { 
-                    map.setView([47.5, 10.8], 5);
-                }
                 updateZoomLevel(); 
-
-                // Show log area only if there are files to process (EXIF readable ones)
-                let exifProcessableFileCount = filesToProcess.filter(file => 
-                    ['image/jpeg', 'image/tiff'].includes(file.type) || 
-                    ['.jpg', '.jpeg', '.tif', '.tiff'].includes(file.name.substring(file.name.lastIndexOf('.')).toLowerCase())
-                ).length;
-
-                if (exifProcessableFileCount > 0) {
-                    logDisplayArea.style.display = 'block'; 
-                    folderProcessingLogsContainer.style.display = 'block';
-                    folderProcessingLogsElement.innerHTML = '';
-                } else {
-                     logDisplayArea.style.display = 'none';
-                }
-
 
                 let exampleImageFile = null;
                 let photosWithGPSCount = 0;
-                const promises = [];
+                
+                const batchSize = 30;
+                let currentBatch = 0;
 
-                for (const file of filesToProcess) {
-                     if (file.name.toLowerCase() === 'example.jpg') {
-                        exampleImageFile = file;
-                    }
-                    if (['image/jpeg', 'image/tiff'].includes(file.type) || ['.jpg', '.jpeg', '.tif', '.tiff'].includes(file.name.substring(file.name.lastIndexOf('.')).toLowerCase())) {
-                        if (folderProcessingLogsElement) { // Check if log element exists
-                            const logEntry = document.createElement('p');
-                            logEntry.textContent = `Processing for EXIF: ${file.name}...`;
-                            folderProcessingLogsElement.appendChild(logEntry);
-                            folderProcessingLogsElement.scrollTop = folderProcessingLogsElement.scrollHeight;
+                async function processBatch() {
+                    const start = currentBatch * batchSize;
+                    const end = start + batchSize;
+                    const batch = filesToProcess.slice(start, end);
+                    
+                    showToast(`Processing photos ${start + 1}-${Math.min(end, filesToProcess.length)} of ${filesToProcess.length}...`, 'info', 4000);
+
+                    const promises = batch.map(file => new Promise(async (resolveFile) => {
+                        if (file.name.toLowerCase() === 'example.jpg' && !isGenusView) {
+                            exampleImageFile = file;
                         }
-
-                        promises.push(new Promise(async (resolveFile) => {
+                        if (['image/jpeg', 'image/tiff'].includes(file.type) || ['.jpg', '.jpeg', '.tif', '.tiff'].includes(file.name.substring(file.name.lastIndexOf('.')).toLowerCase())) {
                             try {
                                 const exifData = await new Promise((resolve, reject) => {
                                     EXIF.getData(file, function() { 
@@ -773,83 +699,66 @@
                                     const photoData = { lat: latitude, lon: longitude, desc: file.name, fileObject: file, date: dateTaken }; 
                                     allOriginalPhotoLocations.push(photoData);
                                     photosWithGPSCount++;
-                                    if (folderProcessingLogsElement && folderProcessingLogsElement.lastChild && folderProcessingLogsElement.lastChild.textContent.startsWith(`Processing for EXIF: ${file.name}`)) {
-                                       folderProcessingLogsElement.lastChild.innerHTML += ` <span class="text-green-600">GPS found - Stored.</span>`;
-                                    }
-                                } else {
-                                     if (folderProcessingLogsElement && folderProcessingLogsElement.lastChild && folderProcessingLogsElement.lastChild.textContent.startsWith(`Processing for EXIF: ${file.name}`)) {
-                                       folderProcessingLogsElement.lastChild.innerHTML += ` <span class="text-gray-500">No GPS data.</span>`;
-                                    }
                                 }
                             } catch (error) {
                                 console.error("Error EXIF " + file.name + ":", error);
-                                if (folderProcessingLogsElement && folderProcessingLogsElement.lastChild && folderProcessingLogsElement.lastChild.textContent.startsWith(`Processing for EXIF: ${file.name}`)) {
-                                    folderProcessingLogsElement.lastChild.innerHTML += ` <span class="text-red-600">Error (${error.message}).</span>`;
-                                }
                             }
-                            resolveFile();
-                        }));
-                    }
-                }
-
-                if (exampleImageFile && !isGenusView) { 
-                    currentExampleImageUrl = URL.createObjectURL(exampleImageFile);
-                    const tempImg = new Image();
-                    tempImg.onload = function() {
-                        const maxAllowedWidth = mapContainerOuterElement.clientWidth * 0.20; 
-                        const maxAllowedHeight = mapContainerOuterElement.clientHeight * 0.30; 
-                        let newWidth = tempImg.naturalWidth;
-                        let newHeight = tempImg.naturalHeight;
-                        if (newWidth > maxAllowedWidth) {
-                            newHeight = (maxAllowedWidth / newWidth) * newHeight;
-                            newWidth = maxAllowedWidth;
                         }
-                        if (newHeight > maxAllowedHeight) {
-                            newWidth = (maxAllowedHeight / newHeight) * newWidth;
-                            newHeight = maxAllowedHeight;
+                        resolveFile();
+                    }));
+                    await Promise.all(promises);
+
+                    currentBatch++;
+                    if (currentBatch * batchSize < filesToProcess.length) {
+                        setTimeout(processBatch, 50); 
+                    } else {
+                        finalizeProcessing();
+                    }
+                }
+                
+                function finalizeProcessing() {
+                    if (exampleImageFile && !isGenusView) { 
+                        currentExampleImageUrl = URL.createObjectURL(exampleImageFile);
+                        const tempImg = new Image();
+                        tempImg.onload = function() {
+                            const maxAllowedWidth = mapContainerOuterElement.clientWidth * 0.20; 
+                            const maxAllowedHeight = mapContainerOuterElement.clientHeight * 0.30; 
+                            let newWidth = tempImg.naturalWidth;
+                            let newHeight = tempImg.naturalHeight;
+                            if (newWidth > maxAllowedWidth) {
+                                newHeight = (maxAllowedWidth / newWidth) * newHeight;
+                                newWidth = maxAllowedWidth;
+                            }
+                            if (newHeight > maxAllowedHeight) {
+                                newWidth = (maxAllowedHeight / newHeight) * newWidth;
+                                newHeight = maxAllowedHeight;
+                            }
+                            exampleImageOverlayElement.style.width = newWidth + 'px';
+                            exampleImageOverlayElement.style.height = newHeight + 'px';
+                            exampleImageOverlayElement.src = currentExampleImageUrl;
+                            exampleImageOverlayElement.style.display = 'block';
                         }
-                        exampleImageOverlayElement.style.width = newWidth + 'px';
-                        exampleImageOverlayElement.style.height = newHeight + 'px';
-                        exampleImageOverlayElement.src = currentExampleImageUrl;
-                        exampleImageOverlayElement.style.display = 'block';
+                        tempImg.src = currentExampleImageUrl;
                     }
-                    tempImg.src = currentExampleImageUrl;
-                    showToast('"example.jpg" found and displayed.', 'info');
-                } else {
-                    exampleImageOverlayElement.style.display = 'none';
-                    exampleImageOverlayElement.style.width = ''; 
-                    exampleImageOverlayElement.style.height = '';
-                    if (!isGenusView && exampleImageFile) showToast('"example.jpg" not shown for genus view.', 'info');
-                    else if (!isGenusView) showToast('"example.jpg" not found in this species folder.', 'info');
-                }
-                
-                await Promise.all(promises); 
-                reclusterAndDisplay(); 
-
-                if (allOriginalPhotoLocations.length > 0) {
-                    const bounds = L.latLngBounds(allOriginalPhotoLocations.map(p => [p.lat, p.lon]));
-                    if (bounds.isValid()) {
-                        map.fitBounds(bounds, { padding: [50, 50] }); 
+                    
+                    reclusterAndDisplay(); 
+                    if (allOriginalPhotoLocations.length > 0) {
+                        const bounds = L.latLngBounds(allOriginalPhotoLocations.map(p => [p.lat, p.lon]));
+                        if (bounds.isValid()) {
+                            map.fitBounds(bounds, { padding: [50, 50] }); 
+                        }
+                    } else { 
+                        map.setView([47.5, 10.8], 5); 
                     }
-                } else if (!isGenusView) { 
-                    map.setView([47.5, 10.8], 5); 
+                    updateZoomLevel();
+                    showToast(`Finished! Displaying ${photosWithGPSCount} photo(s) for ${viewTitle}.`, 'success', 4000);
+                    
+                    if (isPanelOpen) { 
+                        toggleSlidePanel(); 
+                    }
                 }
-                updateZoomLevel();
 
-                if (logDisplayArea.style.display === 'block') { // If logs were shown
-                    imageCountTextElement.innerHTML = `Processed <strong class="text-green-700">${filesToProcess.length}</strong> files for ${viewTitle}. 
-                                                   <strong class="text-pink-600">${photosWithGPSCount}</strong> photo(s) with GPS added.`;
-                }
-                showToast(`Displaying ${photosWithGPSCount} photo(s) for ${viewTitle}.`, 'success', 4000);
-                
-                // Hide log area after a short delay after showing the summary toast
-                setTimeout(() => {
-                    logDisplayArea.style.display = 'none';
-                }, 5000);
-                
-                if (isPanelOpen) { 
-                    toggleSlidePanel(); 
-                }
+                await processBatch(); // Start the first batch
             }
 
             async function processSelectedSpecies(speciesData) {
@@ -975,7 +884,10 @@
                     return;
                 }
                 
-                resetUIForNewParentFolder(); 
+                startupModalProcessing.style.display = 'block';
+                startupModalContent.style.display = 'none';
+                
+                // resetUIForNewParentFolder(); 
                 
                 const tempGenusMap = new Map(); 
 
@@ -1022,10 +934,7 @@
                 if (groupedSpeciesData.length > 0) {
                     scientificNameInputElement.value = "All orchids";
                     dutchNameInputElement.value = "(Overview)";
-                    parentFolderSelectionSection.style.display = 'none'; 
-                    speciesSelectionSection.style.display = 'block';    
-                    logDisplayArea.style.display = 'none';  
-
+                    
                     let allFilesForOverview = [];
                     groupedSpeciesData.forEach(genus => {
                         genus.speciesList.forEach(species => {
@@ -1033,13 +942,14 @@
                         });
                     });
                     await processFileList(allFilesForOverview, "All orchids (Overview)", true); 
+                    
+                    startupModal.classList.remove('show');
+                    slidePanelToggleButton.style.display = 'block'; 
+                    mapContainerOuterElement.style.marginLeft = `${HANDLE_WIDTH}px`;
+
                 } else {
                     showToast("No valid species subfolders found in the selected parent folder.", "info");
-                    parentFolderSelectionSection.style.display = 'block'; 
-                    speciesSelectionSection.style.display = 'none';
-                    if (isPanelOpen) { 
-                        toggleSlidePanel(); 
-                    }
+                    resetUIForNewParentFolder(); // Go back to startup modal state
                 }
             });
             
@@ -1053,9 +963,6 @@
             }
             map.on('zoomend', updateZoomLevel);
             updateZoomLevel(); 
-
-            // Open panel on startup by calling the toggle function once
-            toggleSlidePanel();
 
             const mapElement = document.getElementById('map'); 
             const resizeObserver = new ResizeObserver(() => { map.invalidateSize(); });
