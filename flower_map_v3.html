@@ -238,6 +238,8 @@
             padding: 0.5rem;
             cursor: pointer;
             border-bottom: 1px solid #f3f4f6; 
+            display: flex; 
+            align-items: center; 
         }
         .species-list-item:last-child {
             border-bottom: none;
@@ -249,6 +251,22 @@
             background-color: #bfdbfe; 
             font-weight: 600;
         }
+        .count-bubble {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(0, 120, 255, 0.6); 
+            border: 1px solid rgba(0, 100, 220, 1);
+            border-radius: 50%;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+            flex-shrink: 0; 
+        }
+
         #zoomLevelDisplay {
             position: absolute;
             top: 10px;
@@ -265,6 +283,26 @@
         }
         .panel-section:last-child {
             margin-bottom: 0;
+        }
+        #noGpsIndicator {
+            position: absolute;
+            bottom: 25px; /* Moved up to avoid leaflet controls */
+            right: 10px;
+            z-index: 900;
+            cursor: pointer;
+            background-color: rgba(156, 163, 175, 0.7); /* Light grey background */
+            border: 2px solid rgba(107, 114, 128, 1);  /* Darker grey border */
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 0 5px rgba(0,0,0,0.4);
+            display: none; 
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem; 
+            width: 35px;
+            height: 35px;
         }
     </style>
 </head>
@@ -285,7 +323,9 @@
                 <button id="slidePanelToggle">☰</button> 
                 <div id="panelContentWrapper" class="grow overflow-auto">
                     <div id="speciesSelectionSection" class="bg-white p-6 rounded-lg shadow-lg panel-section" style="display: none;">
-                        <h2 class="text-xl font-semibold mb-2 text-green-600">Select Species by Genus</h2>
+                        <button id="showAllButton" class="w-full mb-3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out">
+                            Show All Orchids
+                        </button>
                         <input type="text" id="speciesSearchInput" placeholder="Search species/genus..."
                                class="w-full px-3 py-2 mb-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         <p class="text-sm text-gray-600 mb-3">
@@ -293,9 +333,6 @@
                         </p>
                         <div id="speciesListContainer">
                         </div>
-                        <button id="loadNewFolderButton" class="w-full mt-4 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out">
-                            Load New Parent Folder
-                        </button>
                     </div>
                 </div>
             </div>
@@ -304,6 +341,7 @@
                 <div id="map"></div>
                 <img id="exampleImageOverlay" src="#" alt="Example flower image" />
                 <div id="zoomLevelDisplay">Zoom: N/A</div> 
+                <div id="noGpsIndicator" title="Photos without GPS data"></div>
             </div>
         </div>
 
@@ -366,6 +404,7 @@
             }).addTo(map);
 
             let allOriginalPhotoLocations = []; 
+            let photosWithoutGps = []; 
             let activeClusterMarkers = []; 
             let groupedSpeciesData = []; 
 
@@ -398,7 +437,8 @@
             const speciesSelectionSection = document.getElementById('speciesSelectionSection');
             const speciesListContainer = document.getElementById('speciesListContainer');
             const speciesSearchInputElement = document.getElementById('speciesSearchInput'); 
-            const loadNewFolderButton = document.getElementById('loadNewFolderButton');
+            const showAllButton = document.getElementById('showAllButton');
+            const noGpsIndicator = document.getElementById('noGpsIndicator');
             
             const slidePanelToggleButton = document.getElementById('slidePanelToggle'); 
             const leftPanelContainer = document.getElementById('leftPanelContainer'); 
@@ -439,6 +479,8 @@
                 exampleImageOverlayElement.style.height = '';
                 
                 allOriginalPhotoLocations = [];
+                photosWithoutGps = [];
+                noGpsIndicator.style.display = 'none';
                 groupedSpeciesData = [];
                 reclusterAndDisplay(); 
                 closeGalleryModal(); 
@@ -452,11 +494,14 @@
                 map.setView([51.1657, 10.4515], 5); 
             }
             
-            loadNewFolderButton.addEventListener('click', resetUIForNewParentFolder);
+            // loadNewFolderButton is removed from HTML, so this listener is not needed.
+            // loadNewFolderButton.addEventListener('click', resetUIForNewParentFolder);
 
 
             function resetUIForNewSpeciesSelection() {
                 allOriginalPhotoLocations = [];
+                photosWithoutGps = [];
+                noGpsIndicator.style.display = 'none';
                 reclusterAndDisplay(); 
                 closeGalleryModal(); 
             }
@@ -545,7 +590,7 @@
 
                 galleryImageElement.src = objectURL;
                 galleryFilenameElement.textContent = currentPhotoData.desc; 
-                galleryCoordinatesElement.textContent = `Lat: ${currentPhotoData.lat.toFixed(4)}, Lon: ${currentPhotoData.lon.toFixed(4)}`;
+                galleryCoordinatesElement.textContent = currentPhotoData.lat ? `Lat: ${currentPhotoData.lat.toFixed(4)}, Lon: ${currentPhotoData.lon.toFixed(4)}` : 'No GPS Data';
                 galleryDateElement.textContent = formatExifDateToDutch(currentPhotoData.date); 
                 galleryCounterElement.textContent = `${currentGalleryIndex + 1} / ${currentGalleryPhotosData.length}`;
 
@@ -637,7 +682,6 @@
                     mapContainerOuterElement.style.marginLeft = `${PANEL_WIDTH}px`;
                     slidePanelToggleButton.innerHTML = '&times;'; 
                     
-                    // Only show species selection after folder has been chosen
                     if (groupedSpeciesData.length > 0) { 
                         speciesSelectionSection.style.display = 'block';
                         groupedSpeciesData.forEach(genus => genus.isExpanded = false);
@@ -699,9 +743,13 @@
                                     const photoData = { lat: latitude, lon: longitude, desc: file.name, fileObject: file, date: dateTaken }; 
                                     allOriginalPhotoLocations.push(photoData);
                                     photosWithGPSCount++;
+                                } else {
+                                    photosWithoutGps.push({ desc: file.name, fileObject: file, date: dateTaken });
                                 }
                             } catch (error) {
                                 console.error("Error EXIF " + file.name + ":", error);
+                                const dateTaken = new Date().toISOString(); 
+                                photosWithoutGps.push({ desc: file.name, fileObject: file, date: dateTaken });
                             }
                         }
                         resolveFile();
@@ -742,6 +790,14 @@
                     }
                     
                     reclusterAndDisplay(); 
+                    if (photosWithoutGps.length > 0) {
+                        noGpsIndicator.textContent = photosWithoutGps.length;
+                        noGpsIndicator.style.display = 'flex';
+                        noGpsIndicator.onclick = () => openGalleryModal(photosWithoutGps, 0);
+                    } else {
+                        noGpsIndicator.style.display = 'none';
+                    }
+
                     if (allOriginalPhotoLocations.length > 0) {
                         const bounds = L.latLngBounds(allOriginalPhotoLocations.map(p => [p.lat, p.lon]));
                         if (bounds.isValid()) {
@@ -750,8 +806,15 @@
                     } else { 
                         map.setView([47.5, 10.8], 5); 
                     }
+
+                    map.once('zoomend', () => {
+                        showToast(`Finished! Displaying ${photosWithGPSCount} photo(s) for ${viewTitle}.`, 'success', 4000);
+                        setTimeout(() => {
+                           showToast("Happy exploring!", "info", 2000);
+                        }, 500); 
+                    });
+                    
                     updateZoomLevel();
-                    showToast(`Finished! Displaying ${photosWithGPSCount} photo(s) for ${viewTitle}.`, 'success', 4000);
                     
                     if (isPanelOpen) { 
                         toggleSlidePanel(); 
@@ -778,6 +841,21 @@
                 await processFileList(allFilesInGenus, `${genusGroupData.genusName} family`, true);
             }
 
+            function processAllOrchids() {
+                 if (groupedSpeciesData.length > 0) {
+                    scientificNameInputElement.value = "All orchids";
+                    dutchNameInputElement.value = "(Overview)";
+                    
+                    let allFilesForOverview = [];
+                    groupedSpeciesData.forEach(genus => {
+                        genus.speciesList.forEach(species => {
+                            allFilesForOverview = allFilesForOverview.concat(species.filesInSubfolder);
+                        });
+                    });
+                    processFileList(allFilesForOverview, "All orchids (Overview)", true); 
+                }
+            }
+            showAllButton.addEventListener('click', processAllOrchids);
 
             function renderSpeciesAccordion(filterText = "") {
                 speciesListContainer.innerHTML = ''; 
@@ -802,7 +880,8 @@
                     
                     const genusNameSpan = document.createElement('span');
                     genusNameSpan.className = 'genus-name-text';
-                    genusNameSpan.textContent = `${genusGroup.genusName} (${genusGroup.speciesList.length})`;
+                    const genusPhotoCount = genusGroup.speciesList.reduce((acc, s) => acc + s.filesInSubfolder.length, 0);
+                    genusNameSpan.innerHTML = `<span class="count-bubble">${genusPhotoCount}</span> ${genusGroup.genusName}`;
                     
                     const arrowSpan = document.createElement('span');
                     arrowSpan.className = 'arrow';
@@ -825,7 +904,7 @@
                     speciesToDisplay.forEach(species => {
                         const speciesItem = document.createElement('div');
                         speciesItem.className = 'species-list-item';
-                        speciesItem.textContent = `${species.scientificName}${species.dutchName ? ` (${species.dutchName})` : ''}`;
+                        speciesItem.innerHTML = `<span class="count-bubble">${species.filesInSubfolder.length}</span> <span>${species.scientificName}${species.dutchName ? ` (${species.dutchName})` : ''}</span>`;
                         speciesItem.onclick = (event) => {
                             event.stopPropagation(); 
                             speciesListContainer.querySelectorAll('.species-list-item.selected').forEach(el => el.classList.remove('selected'));
@@ -887,8 +966,6 @@
                 startupModalProcessing.style.display = 'block';
                 startupModalContent.style.display = 'none';
                 
-                // resetUIForNewParentFolder(); 
-                
                 const tempGenusMap = new Map(); 
 
                 for (let i = 0; i < files.length; i++) {
@@ -949,7 +1026,7 @@
 
                 } else {
                     showToast("No valid species subfolders found in the selected parent folder.", "info");
-                    resetUIForNewParentFolder(); // Go back to startup modal state
+                    resetUIForNewParentFolder(); 
                 }
             });
             
