@@ -12,6 +12,9 @@
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js" defer></script>
+    <!-- New Libraries for Zipping -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" defer></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -161,6 +164,7 @@
              max-height: 90vh; display: flex; flex-direction: column;
         }
         .gallery-image-container {
+            position: relative; 
             flex-grow: 1; display: flex; align-items: center; justify-content: center;
             overflow: hidden; margin-bottom: 5px; 
         }
@@ -286,12 +290,12 @@
         }
         #noGpsIndicator {
             position: absolute;
-            bottom: 25px; /* Moved up to avoid leaflet controls */
+            bottom: 25px; 
             right: 10px;
             z-index: 900;
             cursor: pointer;
-            background-color: rgba(156, 163, 175, 0.7); /* Light grey background */
-            border: 2px solid rgba(107, 114, 128, 1);  /* Darker grey border */
+            background-color: rgba(156, 163, 175, 0.7); 
+            border: 2px solid rgba(107, 114, 128, 1);  
             border-radius: 50%;
             color: white;
             font-weight: bold;
@@ -303,6 +307,33 @@
             font-size: 0.9rem; 
             width: 35px;
             height: 35px;
+        }
+        #galleryMarkDeleteButton {
+            background-color: #fca5a5; 
+            color: #991b1b; 
+            padding: 6px 12px;
+            font-weight: 600;
+            border-radius: 0.375rem;
+        }
+        #galleryMarkDeleteButton.marked {
+            background-color: #4ade80; 
+            color: #166534; 
+        }
+        #galleryDeleteOverlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none; 
+            pointer-events: none; 
+        }
+        #galleryDeleteOverlay > svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible; /* Ensure lines are not clipped */
+        }
+        #galleryDeleteOverlay > svg line {
+            stroke: red;
+            stroke-width: 1.75; /* Increased width */
         }
     </style>
 </head>
@@ -333,6 +364,10 @@
                         </p>
                         <div id="speciesListContainer">
                         </div>
+                        <p id="deletionCounter" class="mt-4 text-sm text-center text-gray-600"></p>
+                        <button id="exportZipButton" class="w-full mt-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out" style="display: none;">
+                            Export Cleaned Photos as ZIP
+                        </button>
                     </div>
                 </div>
             </div>
@@ -376,6 +411,12 @@
         <div class="gallery-content">
             <button id="galleryCloseButton">&times;</button>
             <div class="gallery-image-container">
+                <div id="galleryDeleteOverlay">
+                    <svg width="100%" height="100%" preserveAspectRatio="none">
+                        <line x1="0" y1="0" x2="100%" y2="100%" />
+                        <line x1="0" y1="100%" x2="100%" y2="0" />
+                    </svg>
+                </div>
                 <img id="galleryImage" src="#" alt="Gallery image" />
             </div>
             <div class="gallery-info">
@@ -385,7 +426,7 @@
             </div>
             <div class="gallery-controls">
                 <button id="galleryPrevButton" class="gallery-nav-button">&larr;</button>
-                <span id="galleryCounter">1 / 1</span>
+                <button id="galleryMarkDeleteButton">delete</button>
                 <button id="galleryNextButton" class="gallery-nav-button">&rarr;</button>
             </div>
         </div>
@@ -403,10 +444,12 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
+            let allLoadedFiles = []; 
             let allOriginalPhotoLocations = []; 
             let photosWithoutGps = []; 
             let activeClusterMarkers = []; 
-            let groupedSpeciesData = []; 
+            let groupedSpeciesData = [];
+            let deletionList = new Set(); 
 
             const scientificNameInputElement = document.getElementById('scientificNameInput');
             const dutchNameInputElement = document.getElementById('dutchNameInput');
@@ -419,13 +462,14 @@
 
             const galleryModal = document.getElementById('galleryModal');
             const galleryImageElement = document.getElementById('galleryImage');
+            const galleryDeleteOverlay = document.getElementById('galleryDeleteOverlay');
             const galleryFilenameElement = document.getElementById('galleryFilename');
             const galleryCoordinatesElement = document.getElementById('galleryCoordinates'); 
             const galleryDateElement = document.getElementById('galleryDate'); 
             const galleryPrevButton = document.getElementById('galleryPrevButton');
             const galleryNextButton = document.getElementById('galleryNextButton');
+            const galleryMarkDeleteButton = document.getElementById('galleryMarkDeleteButton');
             const galleryCloseButton = document.getElementById('galleryCloseButton');
-            const galleryCounterElement = document.getElementById('galleryCounter');
             let currentGalleryPhotosData = []; 
             let currentGalleryIndex = 0;
             let currentGalleryObjectUrls = []; 
@@ -438,6 +482,8 @@
             const speciesListContainer = document.getElementById('speciesListContainer');
             const speciesSearchInputElement = document.getElementById('speciesSearchInput'); 
             const showAllButton = document.getElementById('showAllButton');
+            const deletionCounterElement = document.getElementById('deletionCounter');
+            const exportZipButton = document.getElementById('exportZipButton');
             const noGpsIndicator = document.getElementById('noGpsIndicator');
             
             const slidePanelToggleButton = document.getElementById('slidePanelToggle'); 
@@ -464,6 +510,17 @@
                 }, duration);
             }
             
+            function updateDeletionCounter() {
+                const count = deletionList.size;
+                if (count > 0) {
+                    deletionCounterElement.textContent = `${count} photo(s) marked for deletion.`;
+                    exportZipButton.style.display = 'block';
+                } else {
+                    deletionCounterElement.textContent = '';
+                    exportZipButton.style.display = 'none';
+                }
+            }
+
             function resetUIForNewParentFolder() { 
                 scientificNameInputElement.value = '';
                 dutchNameInputElement.value = '';
@@ -478,10 +535,13 @@
                 exampleImageOverlayElement.style.width = ''; 
                 exampleImageOverlayElement.style.height = '';
                 
+                allLoadedFiles = [];
                 allOriginalPhotoLocations = [];
                 photosWithoutGps = [];
                 noGpsIndicator.style.display = 'none';
                 groupedSpeciesData = [];
+                deletionList.clear();
+                updateDeletionCounter();
                 reclusterAndDisplay(); 
                 closeGalleryModal(); 
                 
@@ -494,7 +554,6 @@
                 map.setView([51.1657, 10.4515], 5); 
             }
             
-            // loadNewFolderButton is removed from HTML, so this listener is not needed.
             // loadNewFolderButton.addEventListener('click', resetUIForNewParentFolder);
 
 
@@ -592,11 +651,41 @@
                 galleryFilenameElement.textContent = currentPhotoData.desc; 
                 galleryCoordinatesElement.textContent = currentPhotoData.lat ? `Lat: ${currentPhotoData.lat.toFixed(4)}, Lon: ${currentPhotoData.lon.toFixed(4)}` : 'No GPS Data';
                 galleryDateElement.textContent = formatExifDateToDutch(currentPhotoData.date); 
-                galleryCounterElement.textContent = `${currentGalleryIndex + 1} / ${currentGalleryPhotosData.length}`;
+                // galleryCounterElement is removed
+
+                const filePath = currentPhotoData.fileObject.webkitRelativePath;
+                if (deletionList.has(filePath)) {
+                    galleryMarkDeleteButton.textContent = 'include';
+                    galleryMarkDeleteButton.classList.add('marked');
+                    galleryDeleteOverlay.style.display = 'block';
+                } else {
+                    galleryMarkDeleteButton.textContent = 'delete';
+                    galleryMarkDeleteButton.classList.remove('marked');
+                    galleryDeleteOverlay.style.display = 'none';
+                }
+
 
                 galleryPrevButton.disabled = currentGalleryIndex === 0;
                 galleryNextButton.disabled = currentGalleryIndex === currentGalleryPhotosData.length - 1;
             }
+
+            function toggleDeletionMark() {
+                if (currentGalleryPhotosData.length === 0) return;
+                const currentPhotoData = currentGalleryPhotosData[currentGalleryIndex];
+                const filePath = currentPhotoData.fileObject.webkitRelativePath;
+
+                if (deletionList.has(filePath)) {
+                    deletionList.delete(filePath);
+                    showToast(`Unmarked ${currentPhotoData.desc} for deletion.`, 'info', 2000);
+                } else {
+                    deletionList.add(filePath);
+                    showToast(`Marked ${currentPhotoData.desc} for deletion.`, 'info', 2000);
+                }
+                updateDeletionCounter();
+                displayGalleryImage(); 
+            }
+            galleryMarkDeleteButton.addEventListener('click', toggleDeletionMark);
+
 
             galleryPrevButton.addEventListener('click', () => {
                 if (currentGalleryIndex > 0) { currentGalleryIndex--; displayGalleryImage(); }
@@ -963,6 +1052,8 @@
                     return;
                 }
                 
+                allLoadedFiles = Array.from(files); 
+
                 startupModalProcessing.style.display = 'block';
                 startupModalContent.style.display = 'none';
                 
